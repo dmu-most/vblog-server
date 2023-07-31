@@ -22,11 +22,10 @@ public class User {
 
     @Column(nullable = false, unique = true)
     private String userId; // 유저 아이디
-    private String nickname;
+    private String name; // 이름
+    private String nickname; // 별명
     @Column(unique = true, nullable = false)
     private String email; // 가입 이메일
-    private Integer age;
-    private String gender;
     private String profileUrl; // 프로필 사진
     @CreatedDate
     private LocalDateTime createDate; // 가입 날짜
@@ -36,12 +35,11 @@ public class User {
     private String providerId; // OAuth의 key(id)
 
     @Builder
-    public User(String email, String userId, String nickname, String profileUrl, Integer age, String gender, String provider, String providerId) {
+    public User(String email, String userId, String name, String nickname, String profileUrl, String provider, String providerId) {
         this.email = email;
         this.userId = userId;
+        this.name = name;
         this.nickname = nickname;
-        this.age = age;
-        this.gender = gender;
         this.profileUrl = profileUrl;
         this.provider = provider;
         this.providerId = providerId;
