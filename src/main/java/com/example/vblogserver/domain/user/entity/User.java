@@ -34,8 +34,12 @@ public class User {
     private String provider; // google, naver, kakao
     private String providerId; // OAuth의 key(id)
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
     @Builder
-    public User(String email, String userId, String name, String nickname, String profileUrl, String provider, String providerId) {
+    public User(String email, String userId, String name, String nickname, String profileUrl, String provider, String providerId, Role role) {
         this.email = email;
         this.userId = userId;
         this.name = name;
@@ -43,5 +47,15 @@ public class User {
         this.profileUrl = profileUrl;
         this.provider = provider;
         this.providerId = providerId;
+        this.role = role;
+    }
+
+    public String getRoleKey() {
+        return this.role.getKey();
+    }
+
+    public User updateNickname(String nickname) {
+        this.nickname = nickname;
+        return this;
     }
 }
