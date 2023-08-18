@@ -1,32 +1,35 @@
 package com.example.vblogserver.domain.user.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "users")
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", updatable = false)
+    @Column(name = "USER_ID")
     private Long id;
-    private String pw;
+    //private String password;
 
-    @Column(nullable = false, unique = true)
-    private String userId; // 유저 아이디
-    private String name; // 이름
-    private String nickname; // 별명
+    //private String username; // 이름
     @Column(unique = true, nullable = false)
     private String email; // 가입 이메일
-    private String profileUrl; // 프로필 사진
+
+    @Column(nullable = false, unique = true, length = 15)  // 닉네임 중복 허용 할건지?
+    private String nickname; // 닉네임
+    //private String profileUrl; // 프로필 사진
     @CreatedDate
     private LocalDateTime createDate; // 가입 날짜
 
@@ -39,12 +42,9 @@ public class User {
     private Role role;
 
     @Builder
-    public User(String email, String userId, String name, String nickname, String profileUrl, String provider, String providerId, Role role) {
+    public User(String email, String nickname, String provider, String providerId, Role role) {
         this.email = email;
-        this.userId = userId;
-        this.name = name;
         this.nickname = nickname;
-        this.profileUrl = profileUrl;
         this.provider = provider;
         this.providerId = providerId;
         this.role = role;
@@ -58,4 +58,7 @@ public class User {
         this.nickname = nickname;
         return this;
     }
+
+    //public void setPassword(String password) { this.password = password; }
+
 }

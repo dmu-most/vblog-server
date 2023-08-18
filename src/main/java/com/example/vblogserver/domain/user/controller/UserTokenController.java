@@ -15,7 +15,7 @@ import org.springframework.http.ResponseEntity;
 public class UserTokenController {
     private final TokenService tokenService;
 
-    @PostMapping("/vblog/token")
+    @PostMapping("/token")
     public ResponseEntity<CreateAccessTokenResponse> createNewAccessToken
             (@RequestBody @NotNull CreateAccessTokenRequest request) {
         String newAccessToken = tokenService.createNewAccessToken(request.getRefreshToken());
@@ -24,7 +24,7 @@ public class UserTokenController {
                 .body(new CreateAccessTokenResponse(newAccessToken));
     }
 
-    @PostMapping("/vblog/test")
+    @PostMapping("/test")
     public void testApi(@RequestBody String test ) {
         System.out.println("testApi is param : " + test);
     }

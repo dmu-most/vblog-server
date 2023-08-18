@@ -1,3 +1,4 @@
+
 const token = searchParam('token')
 
 if(token) {
@@ -40,7 +41,7 @@ if(testEmailBtn) {
         function fail() {
             testEmail.innerHTML = '<div style=\"color:blue\"><div>'
         }
-        httpRequest("POST", "/tooit/userInfo", body, success, fail)
+        httpRequest("POST", "/vblog/userInfo", body, success, fail)
     })
     ;
 }

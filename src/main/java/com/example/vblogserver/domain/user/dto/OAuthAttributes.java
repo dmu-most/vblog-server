@@ -1,5 +1,6 @@
 package com.example.vblogserver.domain.user.dto;
 
+import com.example.vblogserver.domain.user.entity.Role;
 import com.example.vblogserver.domain.user.entity.User;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,6 +25,7 @@ public class OAuthAttributes {
         this.email = email;
         this.provider = provider;
         this.providerId = providerId;
+
     }
 
     public static OAuthAttributes of(String registrationId, String userNameAttributeName, Map<String, Object> attributes) {
@@ -42,45 +44,46 @@ public class OAuthAttributes {
 
     private static OAuthAttributes ofGoogle(String userNameAttributeName, Map<String, Object> attributes) {
         return OAuthAttributes.builder()
-                .email((String) attributes.get("email"))
-                .providerId((String) attributes.get(userNameAttributeName))
-                .provider("google")
-                .attributes(attributes)
-                .nameAttributeKey(userNameAttributeName)
-                .build();
+            .email((String) attributes.get("email"))
+            .providerId((String) attributes.get(userNameAttributeName))
+            .provider("google")
+            .attributes(attributes)
+            .nameAttributeKey(userNameAttributeName)
+            .build();
     }
 
     private static OAuthAttributes ofNaver(String userNameAttributeName, Map<String, Object> attributes) {
         Map<String, Object> response = (Map<String, Object>) attributes.get("response");
 
         return OAuthAttributes.builder()
-                .email((String) response.get("email"))
-                .provider("naver")
-                .providerId((String) response.get(userNameAttributeName))
-                .attributes(response)
-                .nameAttributeKey(userNameAttributeName)
-                .build();
+            .email((String) response.get("email"))
+            .provider("naver")
+            .providerId((String) response.get(userNameAttributeName))
+            .attributes(response)
+            .nameAttributeKey(userNameAttributeName)
+            .build();
     }
 
     private static OAuthAttributes ofKaKao(String userNameAttributeName, Map<String, Object> attributes) {
         Map<String, Object> account = (Map<String, Object>) attributes.get("kakao_account");
 
         return OAuthAttributes.builder()
-                .email((String) account.get("email"))
-                .providerId(attributes.get(userNameAttributeName).toString())
-                .provider("kakao")
-                .attributes(account)
-                .nameAttributeKey(userNameAttributeName)
-                .build();
+            .email((String) account.get("email"))
+            .providerId(attributes.get(userNameAttributeName).toString())
+            .provider("kakao")
+            .attributes(account)
+            .nameAttributeKey(userNameAttributeName)
+            .build();
     }
 
     public User toEntity() {
         return User.builder()
-                .nickname(getNickname())
-                .email(email)
-                .providerId(providerId)
-                .provider(provider)
-                .build();
+            .nickname(getNickname())
+            .email(email)
+            .role(Role.USER)
+            .providerId(providerId)
+            .provider(provider)
+            .build();
     }
 
     private String getNickname() {

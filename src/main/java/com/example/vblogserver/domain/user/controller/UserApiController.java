@@ -1,5 +1,6 @@
 package com.example.vblogserver.domain.user.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.vblogserver.domain.user.dto.CreateAccessTokenRequest;
 import com.example.vblogserver.domain.user.dto.UserInfoDto;
+import com.example.vblogserver.domain.user.dto.UserUpdateDto;
 import com.example.vblogserver.domain.user.service.UserService;
 
 @RequiredArgsConstructor
@@ -37,8 +39,11 @@ public class UserApiController {
      * @return UserInfoDto
      */
     @PutMapping("/nickname")
-    public ResponseEntity<UserInfoDto> updateNickname(@RequestBody @NotNull UserInfoDto request) {
-        UserInfoDto response = userService.updateNickname(request);
+    public ResponseEntity<UserInfoDto> updateNickname(@RequestBody @NotNull UserUpdateDto dto,
+        HttpServletRequest request) {
+
+        String token = request.getHeader("Authorization");
+        UserInfoDto response = userService.updateNickname(dto.getNickname(), token);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
