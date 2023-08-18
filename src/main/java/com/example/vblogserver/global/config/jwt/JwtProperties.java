@@ -15,7 +15,6 @@ import java.security.Key;
 @Setter
 @Getter
 @Component
-@ConfigurationProperties("jwt")
 public class JwtProperties implements InitializingBean {
     @Value("${jwt.issuer}")
     private String issuer;

@@ -35,7 +35,7 @@ spring:
             authorization-grant-type: authorization_code
             redirect-uri: http://localhost:8080/login/oauth2/code/kakao
             client-name: Kakao
-            client-authentication-method: client_secret_post
+            client-authentication-method: POST
 
           naver:
             client-id: ${NAVER_CLIENT_ID}
