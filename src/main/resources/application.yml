@@ -2,6 +2,10 @@ server:
   port: 8080
 
 spring:
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true
   profiles:
     active: dev
     include: secret
@@ -11,37 +15,37 @@ spring:
     username: '${custom.dev_database.username}'
     password: '${custom.dev_database.password}'
   jpa:
-    show-sql: true
     hibernate:
-      ddl-auto: update
-    generate-ddl: true
-  # OAuth2 SNS Login(google, naver, kakao)
+      ddl-auto: create
+      generate-ddl: true
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+        use_sql_comments: true
+  # OAuth2 SNS Login
   security:
     oauth2:
       client:
         registration:
           google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-            scope:
-              - email
-              - profile
+            client-id:
+            client-secret:
+            scope: profile, email
 
           kakao:
-            client-id: ${KAKAO_CLIENT_ID}
-            client-secret: ${KAKAO_CLIENT_SECRET}
-            scope:
-              - account_email
+            client-id:
+            client-secret:
+            scope: profile_nickname, profile_image, account_email
             authorization-grant-type: authorization_code
             redirect-uri: http://localhost:8080/login/oauth2/code/kakao
             client-name: Kakao
-            client-authentication-method: POST
+            client-authentication-method: client_secret_post
 
           naver:
-            client-id: ${NAVER_CLIENT_ID}
-            client-secret: ${NAVER_CLIENT_SECRET}
-            scope:
-              - email
+            client-id:
+            client-secret:
+            scope: name, email, profile_image
             client-name: Naver
             authorization-grant-type: authorization_code
             redirect-uri: http://localhost:8080/login/oauth2/code/naver
@@ -77,6 +81,10 @@ springdoc:
 
 # jwt 토큰
 jwt:
-  issuer:
-  secret_key:
-
+  secretKey:
+  access:
+    expiration: 3600000 # 1시간(60분) (1000L(ms -> s) * 60L(s -> m) * 60L(m -> h))
+    header: Authorization
+  refresh:
+    expiration: 1209600000 #  (1000L(ms -> s) * 60L(s -> m) * 60L(m -> h) * 24L(h -> 하루) * 14(2주))
+    header: Authorization-refresh
