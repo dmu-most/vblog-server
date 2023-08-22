@@ -118,8 +118,8 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 		log.info("checkAccessTokenAndAuthentication() 호출");
 		jwtService.extractAccessToken(request)
 			.filter(jwtService::isTokenValid)
-			.ifPresent(accessToken -> jwtService.extractEmail(accessToken)
-				.ifPresent(email -> userRepository.findByEmail(email)
+			.ifPresent(accessToken -> jwtService.extractId(accessToken)
+				.ifPresent(loginid -> userRepository.findByLoginid(loginid)
 					.ifPresent(this::saveAuthentication)));
 
 		filterChain.doFilter(request, response);
@@ -147,7 +147,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 		}
 
 		UserDetails userDetailsUser = org.springframework.security.core.userdetails.User.builder()
-			.username(myUser.getEmail())
+			.username(myUser.getLoginid())
 			.password(password)
 			.roles(myUser.getRole().name())
 			.build();
