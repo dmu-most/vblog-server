@@ -51,6 +51,8 @@ dependencies {
     testImplementation 'org.projectlombok:lombok'
     implementation 'com.auth0:java-jwt:4.2.1'
 
+    //JSON parse
+    implementation group: 'org.json', name: 'json', version: '20230618'
 }
 
 tasks.named('test') {

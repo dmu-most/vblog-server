@@ -15,4 +15,12 @@ public class CategoryG {
     @Column(name = "id", updatable = false)
     private Long id;
     private String categoryName;
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 }
