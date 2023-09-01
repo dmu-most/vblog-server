@@ -1,5 +1,7 @@
 package com.example.vblogserver.domain.user.service;
 
+import java.util.Optional;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +35,10 @@ public class UserService {
             throw new Exception("이미 존재하는 아이디입니다.");
         }
 
+        if (userRepository.findByUsername(userSignUpDto.getUsername()).isPresent()) {
+            throw new Exception("이미 존재하는 별명입니다.");
+        }
+
         User user = User.builder()
             .email(userSignUpDto.getEmail())
             .password(userSignUpDto.getPassword())
@@ -43,5 +49,24 @@ public class UserService {
 
         user.passwordEncode(passwordEncoder);
         userRepository.save(user);
+    }
+
+    public boolean isLoginIdDuplicated(String loginid) {
+        return userRepository.findByLoginid(loginid).isPresent();
+    }
+
+    public boolean isEmailDuplicated(String email) {
+        return userRepository.findByEmail(email).isPresent();
+    }
+
+    public User login(String loginid, String password) throws Exception {
+        User user = userRepository.findByLoginid(loginid)
+            .orElseThrow(() -> new Exception("아이디 또는 비밀번호가 잘못되었습니다."));
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new Exception("아이디 또는 비밀번호가 잘못되었습니다.");
+        }
+
+        return user;
     }
 }
