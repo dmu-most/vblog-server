@@ -18,13 +18,11 @@ public class TmpUser implements CommandLineRunner {
     public void run(String... args) throws Exception {
         User testUser = User.builder()
                 .email("test@testmail.com")
-                .userId("testuser")
-                .nickname("Test User")
-                .age(25)
-                .gender("Male")
-                .profileUrl("https://example.com/profile.jpg")
-                .provider("local")
-                .providerId("testproviderid")
+                .loginid("testuser")
+                .password("test")
+                .username("Test User")
+                .imageUrl("https://example.com/profile.jpg")
+                .socialId(null)
                 .build();
         userRepository.save(testUser);
     }

@@ -52,10 +52,14 @@ dependencies {
     testImplementation 'org.projectlombok:lombok'
     implementation 'com.auth0:java-jwt:4.2.1'
 
-    // Json Parser
+    //JSON parse -- youtube, naver api 관련
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.15.1'
     implementation group: 'org.json', name: 'json', version: '20230618'
+
+    // Json Parser
+    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.15.1'
 }
 
 tasks.named('test') {
