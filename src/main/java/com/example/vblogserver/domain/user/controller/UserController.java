@@ -49,4 +49,13 @@ public class UserController {
         response.setMessage(isDuplicated ? "이미 사용 중인 이메일입니다." : "사용 가능한 이메일입니다.");
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/check-username")
+    public ResponseEntity<ResponseDto> checkNickname(@RequestParam String username) {
+        boolean isDuplicated = userService.isUsernameDuplicated(username);
+        ResponseDto response = new ResponseDto();
+        response.setResult(isDuplicated);
+        response.setMessage(isDuplicated ? "이미 사용 중인 닉네임입니다." : "사용 가능한 닉네임입니다.");
+        return ResponseEntity.ok(response);
+    }
 }

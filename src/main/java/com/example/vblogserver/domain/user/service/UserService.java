@@ -59,6 +59,10 @@ public class UserService {
         return userRepository.findByEmail(email).isPresent();
     }
 
+    public boolean isUsernameDuplicated(String username) {
+        return userRepository.findByUsername(username).isPresent();
+    }
+
     public User login(String loginid, String password) throws Exception {
         User user = userRepository.findByLoginid(loginid)
             .orElseThrow(() -> new Exception("아이디 또는 비밀번호가 잘못되었습니다."));
@@ -69,4 +73,5 @@ public class UserService {
 
         return user;
     }
+
 }
