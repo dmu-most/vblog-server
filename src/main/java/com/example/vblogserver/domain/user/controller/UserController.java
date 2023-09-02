@@ -2,6 +2,7 @@ package com.example.vblogserver.domain.user.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,6 +14,7 @@ import com.example.vblogserver.domain.user.dto.ResponseDto;
 import com.example.vblogserver.domain.user.dto.UserSignUpDto;
 import com.example.vblogserver.domain.user.service.UserService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -21,8 +23,11 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping("/sign-up")
-    public ResponseEntity<UserSignUpDto> signUp(@RequestBody UserSignUpDto userSignUpDto) throws Exception {
+    @PostMapping("/signup")
+    public ResponseEntity<UserSignUpDto> signUp(@Valid @RequestBody UserSignUpDto userSignUpDto, BindingResult bindingResult) throws Exception {
+        if (bindingResult.hasErrors()) {
+            throw new IllegalArgumentException(bindingResult.getFieldError().getDefaultMessage());
+        }
         userService.signUp(userSignUpDto);
         return ResponseEntity.status(HttpStatus.OK).body(userSignUpDto);
     }
