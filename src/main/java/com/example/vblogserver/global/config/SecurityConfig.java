@@ -55,21 +55,20 @@ public class SecurityConfig {
 			-> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
 		// 헤더를 확인할 커스텀 필터 추가
-		http.addFilterBefore(customJsonUsernamePasswordAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+		//http.addFilterBefore(customJsonUsernamePasswordAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
 		// 토큰 재발급 URL은 인증 없이 접근 가능하도록 설정. 나머지 API URL은 인증 필요
 		http.authorizeRequests((authReq)
-			-> authReq.requestMatchers( "/","/sign-up", "/img/**", "/css/**", "/js/**", "/favicon.ico", "/vblog-api.html", "/swagger-ui/**", "/api-docs/**").permitAll()// 회원가입 접근 가능
+			-> authReq.requestMatchers( "/","/signup", "/img/**", "/css/**", "/js/**", "/favicon.ico", "/vblog-api.html", "/swagger-ui/**", "/api-docs/**").permitAll()// 회원가입 접근 가능
 			.anyRequest().permitAll()); // 위의 경로 이외에는 모두 인증된 사용자만 접근 가능
 
 
 		http
-			.addFilterAfter(jwtAuthenticationProcessingFilter(), UsernamePasswordAuthenticationFilter.class) // Move this filter
+			.addFilterAfter(jwtAuthenticationProcessingFilter(), UsernamePasswordAuthenticationFilter.class)
 			.addFilterBefore(customJsonUsernamePasswordAuthenticationFilter(), JwtAuthenticationProcessingFilter.class);
 
 		return http.build();
 	}
-
 
 	@Bean
 	public PasswordEncoder passwordEncoder() {
