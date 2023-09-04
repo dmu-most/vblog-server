@@ -55,9 +55,11 @@ public class UserService {
         return userRepository.findByEmail(email).isPresent();
     }
 
+    /*
     public boolean isUsernameDuplicated(String username) {
         return userRepository.findByUsername(username).isPresent();
     }
+     */
 
     public User login(String loginid, String password) throws Exception {
         User user = userRepository.findByLoginid(loginid)
