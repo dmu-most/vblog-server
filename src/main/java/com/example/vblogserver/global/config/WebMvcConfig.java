@@ -15,7 +15,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 "http://dmu-vblog.s3-website.ap-northeast-2.amazonaws.com",
                 "http://localhost:3000"
             )
-            .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+            .allowedMethods("HEAD", "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
             .allowedHeaders("*")
             .allowCredentials(true);
     }
