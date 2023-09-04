@@ -11,7 +11,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-            .allowedOrigins("http://dmu-vblog.s3-website.ap-northeast-2.amazonaws.com")
+            .allowedOrigins(
+                "http://dmu-vblog.s3-website.ap-northeast-2.amazonaws.com",
+                "http://localhost:3000"
+            )
             .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
             .allowedHeaders("*")
             .allowCredentials(true);
