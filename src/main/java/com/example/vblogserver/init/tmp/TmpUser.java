@@ -19,8 +19,8 @@ public class TmpUser implements CommandLineRunner {
         User testUser = User.builder()
                 .email("test@testmail.com")
                 .loginid("testuser")
-                .password("test")
-                .username("Test User")
+                .password("Test123!pw")
+                .username("thisistest")
                 .imageUrl("https://example.com/profile.jpg")
                 .socialId(null)
                 .build();
