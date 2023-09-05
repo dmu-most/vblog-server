@@ -1,5 +1,7 @@
 package com.example.vblogserver.global.config;
 
+import static org.springframework.security.config.Customizer.*;
+
 import java.util.Arrays;
 
 import org.springframework.context.annotation.Bean;
@@ -52,7 +54,8 @@ public class SecurityConfig {
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		http.csrf((csrf) -> csrf.disable())
+		http.cors(withDefaults()) // CORS 설정 추가
+			.csrf((csrf) -> csrf.disable())
 			.httpBasic((httpBasic) -> httpBasic.disable())
 			.formLogin((formLogin) -> formLogin.disable());
 
