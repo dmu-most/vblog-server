@@ -1,5 +1,7 @@
 package com.example.vblogserver.domain.user.service;
 
+import java.util.regex.Pattern;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +44,16 @@ public class UserService {
     }
 
     public boolean isLoginIdDuplicated(String loginId) {
+        // 아이디 길이 체크
+        if (loginId.length() < 4 || loginId.length() > 12) {
+            throw new IllegalArgumentException("아이디의 길이는 4~12자여야 합니다.");
+        }
+
+        // 알파벳 대소문자와 숫자로만 이루어져 있는지 체크
+        if (!loginId.matches("^[a-zA-Z0-9]+$")) {
+            throw new IllegalArgumentException("아이디는 알파벳 대소문자와 숫자로만 이루어져야 합니다.");
+        }
+
         return userRepository.findByLoginId(loginId).isPresent();
     }
 

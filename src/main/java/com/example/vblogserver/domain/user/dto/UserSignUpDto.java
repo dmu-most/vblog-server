@@ -6,10 +6,12 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 // 자체 로그인 회원 가입 API에 RequestBody로 사용
 @NoArgsConstructor
 @Getter
+@Setter
 public class UserSignUpDto {
 	@NotBlank(message = "Login ID cannot be empty")
 	@Pattern(regexp="^[a-zA-Z0-9]{4,12}$", message="Login ID must be 4 to 12 characters (Alphanumeric only)")
