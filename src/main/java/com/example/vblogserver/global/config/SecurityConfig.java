@@ -144,10 +144,10 @@ public class SecurityConfig {
 			Arrays.asList("http://localhost:3000", "http://dmu-vblog.s3-website.ap-northeast-2.amazonaws.com"));
 		configuration.setAllowedMethods(Arrays.asList("HEAD", "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 		configuration.setAllowCredentials(true);
-		configuration.setAllowedHeaders(Arrays.asList("Authorization", "Authorization-refresh", "Cache-Control", "Content-Type"));
+		configuration.setAllowedHeaders(Arrays.asList("Authorization", "Refresh", "Cache-Control", "Content-Type"));
 
 		/* 응답 헤더 설정 추가*/
-		configuration.setExposedHeaders(Arrays.asList("Authorization", "Authorization-refresh"));
+		configuration.setExposedHeaders(Arrays.asList("Authorization", "Refresh"));
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
