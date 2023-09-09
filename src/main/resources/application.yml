@@ -23,6 +23,10 @@ spring:
         show_sql: true
         format_sql: true
         use_sql_comments: true
+  http:
+    encoding:
+      force: true
+      charset: UTF-8
 
 # Swagger springdoc-ui configuration
 springdoc:

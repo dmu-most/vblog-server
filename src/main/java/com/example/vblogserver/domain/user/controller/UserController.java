@@ -1,5 +1,6 @@
 package com.example.vblogserver.domain.user.controller;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -25,12 +26,15 @@ public class UserController {
     private final JwtService jwtService;
 
     @PostMapping("/signup")
-    public ResponseEntity<UserSignUpDto> signUp(@Valid @RequestBody UserSignUpDto userSignUpDto, BindingResult bindingResult) throws Exception {
+    public ResponseEntity<String> signUp(@Valid @RequestBody UserSignUpDto userSignUpDto, BindingResult bindingResult) throws Exception {
         if (bindingResult.hasErrors()) {
             throw new IllegalArgumentException(bindingResult.getFieldError().getDefaultMessage());
         }
         userService.signUp(userSignUpDto);
-        return ResponseEntity.status(HttpStatus.OK).body(userSignUpDto);
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("Content-Type", "application/json;charset=UTF-8");
+
+        return ResponseEntity.status(HttpStatus.OK).headers(responseHeaders).body("\"회원가입이 완료되었습니다.\"");
     }
 
     @GetMapping("/jwt-test")
