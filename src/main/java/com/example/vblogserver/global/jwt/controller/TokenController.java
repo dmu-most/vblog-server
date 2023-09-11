@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.vblogserver.domain.user.dto.ResponseDto;
@@ -20,6 +21,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @RestController
+@RequestMapping("/token")
 @RequiredArgsConstructor
 public class TokenController {
 
@@ -27,7 +29,7 @@ public class TokenController {
 	private final UserRepository userRepository;
 
 	// 액세스 토큰 검증
-	@GetMapping("/verify-access-token")
+	@GetMapping("/verify-access")
 	public ResponseEntity<ResponseDto> verifyAccessToken(HttpServletRequest request) {
 		Optional<String> accessTokenOpt = jwtService.extractAccessToken(request);
 
@@ -46,7 +48,7 @@ public class TokenController {
 	}
 
 	// 리프레시 토큰으로 액세스 토큰 재발급
-	@PostMapping("/refresh-access-token")
+	@PostMapping("/refresh-access")
 	public ResponseEntity<ResponseDto> refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
 		Optional<String> refreshTokenOpt = jwtService.extractRefreshToken(request);
 
