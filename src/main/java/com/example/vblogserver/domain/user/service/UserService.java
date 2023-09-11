@@ -1,7 +1,5 @@
 package com.example.vblogserver.domain.user.service;
 
-import java.util.regex.Pattern;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,6 +64,14 @@ public class UserService {
         }
 
         return user;
+    }
+
+    public void logout(String refreshToken) {
+        User user = userRepository.findByRefreshToken(refreshToken)
+            .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다."));
+
+        user.updateRefreshToken(null);
+        userRepository.save(user);
     }
 
     @PostConstruct

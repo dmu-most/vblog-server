@@ -64,19 +64,11 @@ public class UserController {
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest request) {
-        // 클라이언트에서 보낸 요청 헤더에 포함된 액세스 및 리프레시 토큰 추출
-        Optional<String> accessToken = jwtService.extractAccessToken(request);
-        Optional<String> refreshToken = jwtService.extractRefreshToken(request);
+        String refreshToken = jwtService.extractRefreshToken(request)
+                .orElseThrow(() -> new IllegalArgumentException("리프레시 토큰이 제공되지 않았습니다."));
 
-        // 추출한 토큰들로 DB 내 유저 찾기 (여기서는 loginId를 사용)
-        accessToken.flatMap(jwtService::extractId).ifPresent(loginId -> {
-            userRepository.findByLoginId(loginId).ifPresent(user -> {
-                // 유저가 있으면 해당 유저의 리프레시 토큰 제거 (DB 업데이트)
-                user.updateRefreshToken(null);
-                userRepository.save(user);
-            });
-        });
+        userService.logout(refreshToken);
 
-        return ResponseEntity.ok("로그아웃 되었습니다.");
+        return ResponseEntity.ok("\"로그아웃 되었습니다.\"");
     }
 }
