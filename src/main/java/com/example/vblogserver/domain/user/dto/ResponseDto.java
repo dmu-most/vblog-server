@@ -10,4 +10,9 @@ import lombok.Setter;
 public class ResponseDto {
 	private boolean result;
 	private String message;
+
+	public ResponseDto(boolean result, String message) {
+		this.result = result;
+		this.message = message;
+	}
 }
