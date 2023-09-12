@@ -74,6 +74,13 @@ public class UserService {
         userRepository.save(user);
     }
 
+    public void deleteUser(String refreshToken) {
+        User user = userRepository.findByRefreshToken(refreshToken)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다."));
+
+        userRepository.delete(user);
+    }
+
     @PostConstruct
     public void createTestUser() {
         User testUser = User.builder()

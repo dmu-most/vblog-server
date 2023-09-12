@@ -8,11 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.vblogserver.domain.user.dto.ResponseDto;
 import com.example.vblogserver.domain.user.dto.UserSignUpDto;
@@ -72,5 +68,15 @@ public class UserController {
         userService.logout(refreshToken);
 
         return ResponseEntity.ok("\"로그아웃 되었습니다.\"");
+    }
+
+    @DeleteMapping("/user")
+    public ResponseEntity<String> deleteUser(HttpServletRequest request) {
+        String refreshToken = jwtService.extractRefreshToken(request)
+                .orElseThrow(() -> new IllegalArgumentException("리프레시 토큰이 제공되지 않았습니다."));
+
+        userService.deleteUser(refreshToken);
+
+        return ResponseEntity.ok("\"회원 탈퇴가 완료되었습니다.\"");
     }
 }
