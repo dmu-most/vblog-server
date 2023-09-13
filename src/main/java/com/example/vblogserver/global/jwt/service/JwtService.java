@@ -158,11 +158,13 @@ public class JwtService {
 	 * RefreshToken DB 저장(업데이트)
 	 */
 	public void updateRefreshToken(String id, String refreshToken) {
+		/*
 		userRepository.findByLoginId(id)
 			.ifPresentOrElse(
 				user -> user.updateRefreshToken(refreshToken),
 				() -> new Exception("일치하는 회원이 없습니다.")
 			);
+		 */
 	}
 
 	public boolean isTokenValid(String token) {

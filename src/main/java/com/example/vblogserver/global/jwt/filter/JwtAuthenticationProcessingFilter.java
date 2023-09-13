@@ -78,7 +78,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 	}
 
 	/**
-	 *  [리프레시 토큰으로 유저 정보 찾기 & 액세스 토큰/리프레시 토큰 재발급 메소드]
+	 *  [리프레시 토큰으로 유저 정보 찾기 & 액세스 토큰 재발급 메소드]
 	 *  파라미터로 들어온 헤더에서 추출한 리프레시 토큰으로 DB에서 유저를 찾고, 해당 유저가 있다면
 	 *  JwtService.createAccessToken()으로 AccessToken 생성,
 	 *  reIssueRefreshToken()로 리프레시 토큰 재발급 & DB에 리프레시 토큰 업데이트 메소드 호출
@@ -86,11 +86,10 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 	 */
 	public void checkRefreshTokenAndReIssueAccessToken(HttpServletResponse response, String refreshToken) {
 		userRepository.findByRefreshToken(refreshToken)
-			.ifPresent(user -> {
-				String reIssuedRefreshToken = reIssueRefreshToken(user);
-				jwtService.sendAccessAndRefreshToken(response, jwtService.createAccessToken(user.getLoginId()),
-					reIssuedRefreshToken);
-			});
+				.ifPresent(user -> {
+					String newAccessToken = jwtService.createAccessToken(user.getLoginId());
+					jwtService.sendAccessToken(response, newAccessToken);
+				});
 	}
 
 	/**

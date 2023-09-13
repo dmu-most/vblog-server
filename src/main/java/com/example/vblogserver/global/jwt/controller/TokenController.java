@@ -36,18 +36,22 @@ public class TokenController {
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.set("Content-Type", "application/json;charset=UTF-8");
 
+		// 액세스 토큰이 존재하고 유효하다면
 		if (accessTokenOpt.isPresent() && jwtService.isTokenValid(accessTokenOpt.get())) {
 			return ResponseEntity.ok().headers(responseHeaders).body(
-				new ResponseDto(true, "액세스 토큰이 유효합니다.")
+				new ResponseDto(true, "유효한 액세스 토큰입니다.")
 			);
 		} else {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).headers(responseHeaders).body(
-				new ResponseDto(false, "액세스 토큰이 유효하지 않습니다.")
+				new ResponseDto(false, "유효하지 않은 액세스 토큰입니다.")
 			);
 		}
 	}
 
-	// 리프레시 토큰으로 액세스 토큰 재발급
+	/* 리프레시 토큰으로 액세스 토큰 재발급
+	** 리프레시 토큰으로 새로운 액세스 토큰을 발급받는다.
+	* 요청에서 리프레시 토큰을 추출한 후, 이를 검증한다.
+	 */
 	@PostMapping("/refresh-access")
 	public ResponseEntity<ResponseDto> refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
 		Optional<String> refreshTokenOpt = jwtService.extractRefreshToken(request);
@@ -58,35 +62,35 @@ public class TokenController {
 		if (refreshTokenOpt.isPresent()) {
 			String refreshToken = refreshTokenOpt.get();
 
-			if (!jwtService.isTokenValid(refreshToken)) {
+			if (!jwtService.isTokenValid(refreshToken)) { // 리프레쉬 토큰이 없거나, 유효하지 않으면
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).headers(responseHeaders).body(
-					new ResponseDto(false, "유효하지 않은 리프레시 토큰입니다.")
+						new ResponseDto(false, "유효하지 않은 리프레시 토큰입니다. 다시 로그인 해주세요.")
 				);
 			}
 
 			try {
 				User user = userRepository.findByRefreshToken(refreshToken)
-					.orElseThrow(() -> new UsernameNotFoundException("제공된 리프레시 토큰과 연관된 사용자를 찾을 수 없습니다."));
+						// 해당 리프래쉬 토큰과 연결된 사용자가 DB에서 찾아지지 않으면
+						.orElseThrow(() -> new UsernameNotFoundException("제공된 리프레시 토큰과 연관된 사용자를 찾을 수 없습니다."));
 
 				String loginId = user.getLoginId();
 				String newAccessToken = jwtService.createAccessToken(loginId);
 
-				// AccessToken을 재발급하고 응답에 추가합니다.
 				jwtService.sendAccessToken(response, newAccessToken);
 
 				return ResponseEntity.ok().headers(responseHeaders).body(
-					new ResponseDto(true, "새로운 액세스 토큰이 발급되었습니다.")
+						new ResponseDto(true, "새로운 액세스 토큰이 발급되었습니다.")
 				);
 
 			} catch (UsernameNotFoundException e) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).headers(responseHeaders).body(
-					new ResponseDto(false, e.getMessage())
+						new ResponseDto(false, e.getMessage())
 				);
 			}
 
 		} else {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).headers(responseHeaders).body(
-				new ResponseDto(false, "리프레시 토큰이 제공되지 않았습니다.")
+					new ResponseDto(false, "리프레시 토큰이 제공되지 않았습니다.")
 			);
 		}
 	}
