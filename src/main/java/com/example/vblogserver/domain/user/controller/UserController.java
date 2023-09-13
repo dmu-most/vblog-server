@@ -58,16 +58,6 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/logout")
-    public ResponseEntity<String> logout(HttpServletRequest request) {
-        String refreshToken = jwtService.extractRefreshToken(request)
-                .orElseThrow(() -> new IllegalArgumentException("리프레시 토큰이 제공되지 않았습니다."));
-
-        userService.logout(refreshToken);
-
-        return ResponseEntity.ok("\"로그아웃 되었습니다.\"");
-    }
-
     @DeleteMapping("/users")
     public ResponseEntity<String> deleteUser(HttpServletRequest request) {
         String refreshToken = jwtService.extractRefreshToken(request)
