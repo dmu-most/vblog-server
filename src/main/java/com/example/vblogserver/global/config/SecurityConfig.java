@@ -4,6 +4,10 @@ import static org.springframework.security.config.Customizer.*;
 
 import java.util.Arrays;
 
+import com.example.vblogserver.domain.user.entity.Role;
+import com.example.vblogserver.global.oauth2.handler.OAuth2LoginFailureHandler;
+import com.example.vblogserver.global.oauth2.handler.OAuth2LoginSuccessHandler;
+import com.example.vblogserver.global.oauth2.service.CustomOAuth2UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -45,6 +49,10 @@ public class SecurityConfig {
 	private final JwtService jwtService;
 	private final UserRepository userRepository;
 	private final ObjectMapper objectMapper;
+	private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+	private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
+	private final CustomOAuth2UserService customOAuth2UserService;
+
 
 	@Bean
 	public WebSecurityCustomizer configure() { // 스프링 시큐리티 기능 비활성화
@@ -54,23 +62,34 @@ public class SecurityConfig {
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		System.out.println("filterChain 진입");
+
 		http.cors(withDefaults()) // CORS 설정 추가
 			.csrf((csrf) -> csrf.disable())
 			.httpBasic((httpBasic) -> httpBasic.disable())
 			.formLogin((formLogin) -> formLogin.disable());
+			//.logout((logout) -> logout.disable());
 
 		http.sessionManagement((sessionManagement)
 			-> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-		// 헤더를 확인할 커스텀 필터 추가
-		//http.addFilterBefore(customJsonUsernamePasswordAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
-
 		// 토큰 재발급 URL은 인증 없이 접근 가능하도록 설정. 나머지 API URL은 인증 필요
 		http.authorizeRequests((authReq)
-			-> authReq.requestMatchers( "/","/login","/signup", "/logout", "/check-email", "/check-id","/img/**", "/css/**", "/js/**", "/favicon.ico", "/vblog-api.html", "/swagger-ui/**", "/api-docs/**").permitAll()// 회원가입 접근 가능
+			-> authReq.requestMatchers( "/","/login","/signup", "/logout", "/check-email", "/check-id", "/login/**", "/token/**",
+						"/oauth2/code/**","/img/**", "/css/**", "/js/**", "/favicon.ico", "/vblog-api.html", "/swagger-ui/**", "/api-docs/**").permitAll()
+				.requestMatchers("/api/**").hasRole(Role.USER.name())
 			.anyRequest().permitAll()); // 위의 경로 이외에는 모두 인증된 사용자만 접근 가능
 
+		//== 소셜 로그인 설정 ==//
+		http.oauth2Login((login) -> login.loginPage("/login")
+				.successHandler(oAuth2LoginSuccessHandler) // 인증 성공 시 핸들러, 동의하고 계속하기를 눌렀을 때 Handler 설정
+				.failureHandler(oAuth2LoginFailureHandler) // 소셜 로그인 실패 시 핸들러 설정
+				.userInfoEndpoint((endPoint) -> endPoint.userService(customOAuth2UserService)) // customUserService 설정
+		);
 
+		//http.logout((logout) -> logout.logoutSuccessUrl("/login"));
+
+		// 헤더를 확인할 커스텀 필터 추가
 		http
 			.addFilterAfter(jwtAuthenticationProcessingFilter(), UsernamePasswordAuthenticationFilter.class)
 			.addFilterBefore(customJsonUsernamePasswordAuthenticationFilter(), JwtAuthenticationProcessingFilter.class);

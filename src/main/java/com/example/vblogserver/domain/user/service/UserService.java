@@ -87,20 +87,4 @@ public class UserService {
         return userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new Exception("존재하지 않는 유저입니다."));
     }
-
-    @PostConstruct
-    public void createTestUser() {
-        User testUser = User.builder()
-            .password("Test123!pw")
-            .loginId("testuser")
-            .username("testuser")
-            .imageUrl("https://example.com/profile.jpg")
-            .role(Role.USER)
-            .socialId(null)
-            .build();
-
-        testUser.passwordEncode(passwordEncoder);
-        userRepository.save(testUser);
-    }
-
 }
