@@ -21,7 +21,7 @@ public class TmpUser implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         User testUser = User.builder()
-            .loginId("testuser2")
+            .loginId("testuser")
             .password("Test123!pw")
             .username("thisistest")
             .imageUrl("https://example.com/profile.jpg")

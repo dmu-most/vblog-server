@@ -81,11 +81,11 @@ public class SecurityConfig {
 			.anyRequest().permitAll()); // 위의 경로 이외에는 모두 인증된 사용자만 접근 가능
 
 		//== 소셜 로그인 설정 ==//
-		http.oauth2Login((login) -> login.loginPage("/login")
-				.successHandler(oAuth2LoginSuccessHandler) // 인증 성공 시 핸들러, 동의하고 계속하기를 눌렀을 때 Handler 설정
-				.failureHandler(oAuth2LoginFailureHandler) // 소셜 로그인 실패 시 핸들러 설정
-				.userInfoEndpoint((endPoint) -> endPoint.userService(customOAuth2UserService)) // customUserService 설정
-		);
+		http.oauth2Login(oauth2 ->
+				oauth2.successHandler(oAuth2LoginSuccessHandler)
+						.failureHandler(oAuth2LoginFailureHandler)
+						.userInfoEndpoint(userInfo ->
+								userInfo.userService(customOAuth2UserService)));
 
 		//http.logout((logout) -> logout.logoutSuccessUrl("/login"));
 
