@@ -36,4 +36,16 @@ public class KakaoOAuth2UserInfo extends OAuth2UserInfo {
 
         return (String) profile.get("thumbnail_image_url");
     }
+
+    @Override
+    public String getEmail() {
+        Map<String, Object> account = (Map<String, Object>) attributes.get("kakao_account");
+
+        if(account == null){
+            return null;
+        }
+
+        // 카카오는 email 정보가 kakao_account에 있다.
+        return (String) account.get("email");
+    }
 }
