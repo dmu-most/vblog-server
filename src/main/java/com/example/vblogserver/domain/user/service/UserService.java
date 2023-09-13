@@ -66,6 +66,12 @@ public class UserService {
         return user;
     }
 
+    /**
+     * 로그아웃 메서드
+     * @param refreshToken
+     * 사용자의 리프레시 토큰을 찾아서 null로 업데이트하고 저장함으로써, 해당 토큰을 무효화
+     * 사용자가 액세스 토큰을 갱신하려 할 때, 더 이상 유효하지 않은 리프레시 토큰이므로 새로운 액세스 토큰을 얻지 못하게 된다.
+     */
     public void logout(String refreshToken) {
         User user = userRepository.findByRefreshToken(refreshToken)
             .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다."));
@@ -74,6 +80,11 @@ public class UserService {
         userRepository.save(user);
     }
 
+    /**
+     * 탈퇴 메서드
+     * @param refreshToken
+     * 사용자의 리프레시 토큰을 찾지만, 여기서는 해당 사용자를 데이터베이스에서 완전히 삭제
+     */
     public void deleteUser(String refreshToken) {
         User user = userRepository.findByRefreshToken(refreshToken)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다."));
