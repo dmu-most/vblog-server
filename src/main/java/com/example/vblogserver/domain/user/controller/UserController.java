@@ -1,17 +1,15 @@
 package com.example.vblogserver.domain.user.controller;
 
-import java.util.Optional;
-
 import com.example.vblogserver.domain.user.entity.User;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.vblogserver.domain.user.dto.ResponseDto;
 import com.example.vblogserver.domain.user.dto.UserSignUpDto;
+import com.example.vblogserver.domain.user.dto.UserInfoDto;
 import com.example.vblogserver.domain.user.repository.UserRepository;
 import com.example.vblogserver.domain.user.service.UserService;
 import com.example.vblogserver.global.jwt.service.JwtService;
@@ -70,7 +68,7 @@ public class UserController {
         return ResponseEntity.ok("\"로그아웃 되었습니다.\"");
     }
 
-    @DeleteMapping("/user")
+    @DeleteMapping("/users")
     public ResponseEntity<String> deleteUser(HttpServletRequest request) {
         String refreshToken = jwtService.extractRefreshToken(request)
                 .orElseThrow(() -> new IllegalArgumentException("리프레시 토큰이 제공되지 않았습니다."));
@@ -78,5 +76,15 @@ public class UserController {
         userService.deleteUser(refreshToken);
 
         return ResponseEntity.ok("\"회원 탈퇴가 완료되었습니다.\"");
+    }
+
+    @GetMapping("/users/info")
+    public ResponseEntity<UserInfoDto> getUserInfo(HttpServletRequest request) throws Exception {
+        String accessToken = jwtService.extractAccessToken(request)
+                .orElseThrow(() -> new Exception("액세스 토큰이 없습니다."));
+
+        User user = userService.getUserByAccessToken(accessToken);
+
+        return ResponseEntity.ok(new UserInfoDto(user));
     }
 }

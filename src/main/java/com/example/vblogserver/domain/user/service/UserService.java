@@ -1,5 +1,6 @@
 package com.example.vblogserver.domain.user.service;
 
+import com.example.vblogserver.global.jwt.service.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     /*
 	자체 로그인 회원 가입 시 사용하는 회원 가입 API 로직
@@ -90,6 +92,14 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다."));
 
         userRepository.delete(user);
+    }
+
+    public User getUserByAccessToken(String accessToken) throws Exception {
+        String loginId = jwtService.extractId(accessToken)
+                .orElseThrow(() -> new Exception("유효하지 않은 액세스 토큰입니다."));
+
+        return userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new Exception("존재하지 않는 유저입니다."));
     }
 
     @PostConstruct
