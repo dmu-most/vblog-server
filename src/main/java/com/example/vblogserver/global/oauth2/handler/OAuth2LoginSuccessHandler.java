@@ -44,6 +44,10 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         response.addHeader(jwtService.getRefreshHeader(), "Bearer " + refreshToken);
 
         jwtService.sendAccessAndRefreshToken(response, accessToken, refreshToken);
-        jwtService.updateRefreshToken(oAuth2User.getLoginId(), refreshToken);
+        userRepository.findByLoginId(oAuth2User.getLoginId())
+            .ifPresent(user -> {
+                user.updateRefreshToken(refreshToken);
+                userRepository.saveAndFlush(user);
+            });
     }
 }
