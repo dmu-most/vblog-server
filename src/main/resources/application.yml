@@ -88,8 +88,8 @@ springdoc:
 jwt:
   secretKey:
   access:
-    expiration: 3600000 # 1시간(60분) (1000L(ms -> s) * 60L(s -> m) * 60L(m -> h))
+    expiration: 60 # 1시간(60분=3600000) (1000L(ms -> s) * 60L(s -> m) * 60L(m -> h))
     header: Authorization
   refresh:
-    expiration: 1209600000 #  (1000L(ms -> s) * 60L(s -> m) * 60L(m -> h) * 24L(h -> 하루) * 14(2주))
+    expiration: 1209600000 # 2주 (1000L(ms -> s) * 60L(s -> m) * 60L(m -> h) * 24L(h -> 하루) * 14(2주))
     header: Refresh
