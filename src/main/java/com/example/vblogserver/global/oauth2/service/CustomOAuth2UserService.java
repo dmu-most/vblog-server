@@ -59,11 +59,12 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         // DefaultOAuth2User를 구현한 CustomOAuth2User 객체를 생성해서 반환
         return new CustomOAuth2User(
-                Collections.singleton(new SimpleGrantedAuthority(createdUser.getRole().getKey())),
-                attributes,
-                extractAttributes.getNameAttributeKey(),
-                createdUser.getLoginId(),
-                createdUser.getRole()
+            Collections.singleton(new SimpleGrantedAuthority(createdUser.getRole().getKey())),
+            attributes,
+            extractAttributes.getNameAttributeKey(),
+            createdUser.getLoginId(),
+            createdUser.getRole(),
+            extractAttributes.getOauth2UserInfo().getImageUrl()  // 이미지 URL 추가
         );
     }
 

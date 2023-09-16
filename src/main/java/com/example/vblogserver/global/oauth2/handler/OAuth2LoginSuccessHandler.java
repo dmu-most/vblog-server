@@ -27,16 +27,21 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         log.info("OAuth2 Login 성공!");
         try {
-            CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
+            CustomOAuth2User oAuth2User = (CustomOAuth2User)authentication.getPrincipal();
             loginSuccess(response, oAuth2User); // 로그인에 성공한 경우 access, refresh 토큰 생성
-            response.sendRedirect("http://dmu-vblog.s3-website.ap-northeast-2.amazonaws.com");
+
+            String redirectUrlWithTokensAndUserInfo =
+                "http://dmu-vblog.s3-website.ap-northeast-2.amazonaws.com" +
+                    "?Authorization=Bearer " + jwtService.createAccessToken(oAuth2User.getLoginId()) +
+                    "&imageUrl=" + oAuth2User.getImageUrl() +
+                    "&username=" + oAuth2User.getName();
+
+            response.sendRedirect(redirectUrlWithTokensAndUserInfo);
         } catch (Exception e) {
             throw e;
         }
-
     }
 
-    // TODO : 소셜 로그인 시에도 무조건 토큰 생성하지 말고 JWT 인증 필터처럼 RefreshToken 유/무에 따라 다르게 처리해보기
     private void loginSuccess(HttpServletResponse response, CustomOAuth2User oAuth2User) throws IOException {
         String accessToken = jwtService.createAccessToken(oAuth2User.getLoginId());
         String refreshToken = jwtService.createRefreshToken();
