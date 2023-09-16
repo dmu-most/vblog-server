@@ -26,6 +26,9 @@ public class DetailController {
         this.boardRepository = boardRepository;
     }
 
+    //회원이 조회할 경우
+
+    //비회원이 조회할 경우
     @GetMapping("/board/{contentId}")
     public ResponseEntity<BoardDetailDTO> readDetailBoard(@PathVariable Long contentId) {
         // boardId 게시글이 없을 경우
@@ -51,8 +54,9 @@ public class DetailController {
         boardDetailDTO.setHeart(board.getLikeCount());
         boardDetailDTO.setHate(board.getDisLikeCount());
         boardDetailDTO.setImgurl(board.getThumbnails());
+        System.out.println(board.getThumbnails());
         boardDetailDTO.setLink(board.getLink());
-
+        System.out.println(boardDetailDTO);
         return ResponseEntity.ok(boardDetailDTO);
     }
 }

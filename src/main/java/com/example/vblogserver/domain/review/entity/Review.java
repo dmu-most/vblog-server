@@ -30,13 +30,21 @@ public class Review {
     @JoinColumn(name = "board_id")
     private Board board;
 
-    /*
+
+
+
     // 리뷰 작성자
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "loginId")
     private User user;
-     */
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
     // 평점
     private float grade;
 
@@ -45,10 +53,10 @@ public class Review {
     }
 
     @Builder
-    public Review(String content, Board board /* User user */ , float grade) {
+    public Review(String content, Board board,  User user, float grade) {
         this.content = content;
         this.board = board;
-        //this.user = user;
+        this.user = user;
         this.grade = grade;
     }
 

@@ -83,7 +83,7 @@ public class SecurityConfig {
 		//== 소셜 로그인 설정 ==//
 		http.oauth2Login(oauth2 ->
 				oauth2.loginPage("http://dmu-vblog.s3-website.ap-northeast-2.amazonaws.com/login")
-					.successHandler(oAuth2LoginSuccessHandler)
+					  .successHandler(oAuth2LoginSuccessHandler)
 						.failureHandler(oAuth2LoginFailureHandler)
 						.userInfoEndpoint(userInfo ->
 								userInfo.userService(customOAuth2UserService)));

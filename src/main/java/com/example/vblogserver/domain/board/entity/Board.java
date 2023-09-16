@@ -27,46 +27,67 @@ public class Board {
     @Column(name = "id", updatable = false)
     private Long id;
 
+
+    //리뷰
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<Review> reviews = new ArrayList<>();
 
+    //작성자
     private String writer;
+
 
     @ManyToOne
     @JoinColumn(name = "USER_ID")
     private User user;
+
+    //제목
     private String title;
+    //게시글 링크
     private String link;
+    //내용
+    @Column(length = 3000)
     private String description;
+    //썸네일 이미지 링크
+    @Column(length = 3000)
     private String thumbnails;
+    //해시태그
     private String hashtag;
 
+    //게시글 작성 일자
     @CreatedDate
     @Column(name = "CREATED_DATE", updatable = false, nullable = false)
     private String createdDate;
 
+    //리뷰 count
     @ColumnDefault("0")
     private Integer reviewCount;
+    //좋아요 count
     @ColumnDefault("0")
     private Integer likeCount;
+    //싫어요 count
     @ColumnDefault("0")
     private Integer disLikeCount;
+    //평점
     private Float grade;
 
+    //대분류 카테고리 (vlog, blog)
     @ManyToOne
     @JoinColumn(name = "category_g")
     private CategoryG categoryG;
+    //중분류 카테고리
     @ManyToOne
     @JoinColumn(name = "category_m")
     private CategoryM categoryM;
+    //소분류 카테고리
+    //(UI에서는 제거됨. Naver, Youtube API에 요청 시, 검색용 keyword 저장하는 용도로 사용 중)
     @ManyToOne
     @JoinColumn(name = "category_s")
     private CategoryS categoryS;
 
 
     @Builder
-    public Board(String title, String link, String description, User user) {
+    public Board(String title, String link, String description) {
         this.title = title;
         this.link = link;
         this.description = description;

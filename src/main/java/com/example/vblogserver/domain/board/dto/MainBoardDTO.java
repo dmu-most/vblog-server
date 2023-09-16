@@ -8,7 +8,7 @@ public class MainBoardDTO {
     private String ContentDate;
     private String ContentTitle;
     private String Content;
-    private int Heart;
+    private Integer Heart;
     private int Review;
     private String UserName;
     private List<String> Hashtags;
@@ -52,7 +52,7 @@ public class MainBoardDTO {
         return Heart;
     }
 
-    public void setHeart(int heart) {
+    public void setHeart(Integer heart) {
         Heart = heart;
     }
 

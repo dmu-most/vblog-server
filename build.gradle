@@ -60,6 +60,9 @@ dependencies {
     // Json Parser
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.15.1'
+
+    // Naver 이미지 스크랩 관련
+    implementation 'org.jsoup:jsoup:1.15.3'
 }
 
 tasks.named('test') {

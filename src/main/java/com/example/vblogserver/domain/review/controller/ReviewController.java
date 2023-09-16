@@ -47,7 +47,7 @@ public class ReviewController {
                     reviewDTO.setId(review.getId());
                     reviewDTO.setContent(review.getContent());
                     reviewDTO.setCreatedDate(review.getCreatedDate());
-                    //reviewDTO.setUserEmail(review.getUser());
+                    reviewDTO.setUserId(review.getUser().getLoginId());
                     reviewDTO.setGrade(review.getGrade());
                     return reviewDTO;
                 })
@@ -67,23 +67,23 @@ public class ReviewController {
             return ResponseEntity.ok().body(Map.of("result", false, "reason", "게시글이 존재하지 않습니다"));
         }
         String content = request.get("content");
-        //String userEmail = request.get("userEmail");
+        String userId = request.get("userId");
         float grade = Float.parseFloat(request.get("grade"));
 
         //user Email 로 계정 조회
-        /*
+
         User user;
         try {
-            //user = userRepository.findByEmail(userEmail).orElseThrow(() -> new IllegalArgumentException(userEmail + "을 찾을 수 없습니다"));
+            user = userRepository.findByLoginId(userId).orElseThrow(() -> new IllegalArgumentException(userId + "을 찾을 수 없습니다"));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.ok().body(Map.of("result", false, "reason", userEmail+"을 찾을 수 없습니다"));
+            return ResponseEntity.ok().body(Map.of("result", false, "reason", userId+"을 찾을 수 없습니다"));
         }
 
-         */
+
         Review newReview = Review.builder()
                 .content(content)
                 .board(board)
-                //.user(user)
+                .user(user)
                 .grade(grade)
                 .build();
 

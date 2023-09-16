@@ -13,7 +13,7 @@ public class ReviewDTO {
     //리뷰 작성 일자
     private String createdDate;
     //작성자
-    private String userEmail;
+    private String userId;
     //평점
     private float grade;
 
@@ -21,16 +21,13 @@ public class ReviewDTO {
         this.grade = grade;
     }
 
-    /*
-    public String getUserEmail() {
-        return userEmail;
+    public String getUserId() {
+        return userId;
     }
 
-    public void setUserEmail(User user) {
-        this.userEmail = user.getEmail();
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
-
-     */
 
     public Long getId() {
         return id;

@@ -59,6 +59,12 @@ public class MainListController {
         clientDataDTO.setHashtags(board.getHashtag());
         clientDataDTO.setContentId(board.getId());
         clientDataDTO.setImgurl(board.getThumbnails());
+        clientDataDTO.setHeart(board.getLikeCount());
+        if (board.getReviewCount() != null) {
+            clientDataDTO.setReview(board.getReviewCount());
+        }
+
+
         return clientDataDTO;
     }
 }
