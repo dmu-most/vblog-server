@@ -1,6 +1,7 @@
 package com.example.vblogserver.global.oauth2.handler;
 
 import com.example.vblogserver.domain.user.entity.Role;
+import com.example.vblogserver.domain.user.entity.User;
 import com.example.vblogserver.domain.user.repository.UserRepository;
 import com.example.vblogserver.global.jwt.service.JwtService;
 import com.example.vblogserver.global.oauth2.CustomOAuth2User;
@@ -14,6 +15,10 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -27,14 +32,15 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         log.info("OAuth2 Login 성공!");
         try {
-            CustomOAuth2User oAuth2User = (CustomOAuth2User)authentication.getPrincipal();
-            loginSuccess(response, oAuth2User); // 로그인에 성공한 경우 access, refresh 토큰 생성
+            CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
+            Map<String, String> tokens = loginSuccess(response, oAuth2User); // 로그인에 성공한 경우 access, refresh 토큰 생성
 
             String redirectUrlWithTokensAndUserInfo =
-                "http://dmu-vblog.s3-website.ap-northeast-2.amazonaws.com" +
-                    "?Authorization=Bearer " + jwtService.createAccessToken(oAuth2User.getLoginId()) +
-                    "&imageUrl=" + oAuth2User.getImageUrl() +
-                    "&username=" + oAuth2User.getName();
+                "http://dmu-vblog.s3-website.ap-northeast-2.amazonaws.com/callback/true?" +
+                    "Authorization=Bearer " + tokens.get("accessToken") +
+                    "&RefreshToken=Bearer " + tokens.get("refreshToken") +
+                    "&imageUrl=" + URLEncoder.encode(oAuth2User.getImageUrl(), StandardCharsets.UTF_8.name()) +
+                    "&username=" + URLEncoder.encode(oAuth2User.getUsername(), StandardCharsets.UTF_8.name());
 
             response.sendRedirect(redirectUrlWithTokensAndUserInfo);
         } catch (Exception e) {
@@ -42,9 +48,10 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         }
     }
 
-    private void loginSuccess(HttpServletResponse response, CustomOAuth2User oAuth2User) throws IOException {
+    private Map<String,String> loginSuccess(HttpServletResponse response, CustomOAuth2User oAuth2User) throws IOException {
         String accessToken = jwtService.createAccessToken(oAuth2User.getLoginId());
         String refreshToken = jwtService.createRefreshToken();
+
         response.addHeader(jwtService.getAccessHeader(), "Bearer " + accessToken);
         response.addHeader(jwtService.getRefreshHeader(), "Bearer " + refreshToken);
 
@@ -54,5 +61,11 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
                 user.updateRefreshToken(refreshToken);
                 userRepository.saveAndFlush(user);
             });
+
+        Map<String,String> tokens = new HashMap<>();
+        tokens.put("accessToken", accessToken);
+        tokens.put("refreshToken", refreshToken);
+
+        return tokens;
     }
 }

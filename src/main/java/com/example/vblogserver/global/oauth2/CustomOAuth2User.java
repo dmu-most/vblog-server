@@ -17,23 +17,15 @@ public class CustomOAuth2User extends DefaultOAuth2User {
     private String loginId;
     private Role role;
     private String imageUrl;  // 이미지 URL을 저장하기 위한 필드
+    private String username;  // 사용자 이름을 저장하기 위한 필드
 
-
-    /**
-     * Constructs a {@code DefaultOAuth2User} using the provided parameters.
-     *
-     * @param authorities      the authorities granted to the user
-     * @param attributes       the attributes about the user
-     * @param nameAttributeKey the key used to access the user's &quot;name&quot; from
-     *                         {@link #getAttributes()}
-     */
     public CustomOAuth2User(Collection<? extends GrantedAuthority> authorities,
-                            Map<String, Object> attributes, String nameAttributeKey,
-                            String loginId, Role role, String imageUrl) {
+        Map<String, Object> attributes, String nameAttributeKey,
+        String loginId, Role role, String imageUrl, String username) {
         super(authorities, attributes, nameAttributeKey);
         this.loginId = loginId;
         this.role = role;
         this.imageUrl = imageUrl;  // 이미지 URL 설정
-
+        this.username = username;  // 사용자 이름 설정
     }
 }
