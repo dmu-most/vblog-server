@@ -36,7 +36,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             Map<String, String> tokens = loginSuccess(response, oAuth2User); // 로그인에 성공한 경우 access, refresh 토큰 생성
 
             String redirectUrlWithTokensAndUserInfo =
-                "http://dmu-vblog.s3-website.ap-northeast-2.amazonaws.com/callback/true?" +
+                "http://dmu-vblog.s3-website.ap-northeast-2.amazonaws.com?" +
                     "Authorization=Bearer " + tokens.get("accessToken") +
                     "&RefreshToken=Bearer " + tokens.get("refreshToken") +
                     "&imageUrl=" + URLEncoder.encode(oAuth2User.getImageUrl(), StandardCharsets.UTF_8.name()) +
