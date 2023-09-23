@@ -13,9 +13,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.vblogserver.domain.board.dto.BoardDTO;
 import com.example.vblogserver.domain.board.dto.MainBoardDTO;
+import com.example.vblogserver.domain.board.entity.Board;
 import com.example.vblogserver.domain.bookmark.dto.BookmarkDTO;
 import com.example.vblogserver.domain.bookmark.entity.Bookmark;
+import com.example.vblogserver.domain.click.entity.Click;
+import com.example.vblogserver.domain.click.repository.ClickRepository;
 import com.example.vblogserver.domain.review.controller.ReviewService;
 import com.example.vblogserver.domain.review.dto.ReviewDTO;
 import com.example.vblogserver.domain.review.entity.Review;
@@ -37,6 +41,7 @@ public class MypageController {
 	private final UserRepository userRepository;
 	private final ReviewRepository reviewRepository;
 	private final ReviewService reviewService;
+	private final ClickRepository clickRepository;
 
 	@GetMapping("/blog/reviews")
 	public ResponseEntity<List<ReviewDTO>> getUserBlogReviews(HttpServletRequest request) {
@@ -150,4 +155,52 @@ public class MypageController {
 		return ResponseEntity.ok(bookmarkDTOs);
 	}
 
+	@GetMapping("/blog/recently")
+	public ResponseEntity<List<BoardDTO>> getRecentlyViewedBlogBoards(HttpServletRequest request) {
+		return getRecentlyViewedBoardsByCategory(request, "blog");
+	}
+
+	@GetMapping("/vlog/recently")
+	public ResponseEntity<List<BoardDTO>> getRecentlyViewedVlogBoards(HttpServletRequest request) {
+		return getRecentlyViewedBoardsByCategory(request, "vlog");
+	}
+
+	private ResponseEntity<List<BoardDTO>> getRecentlyViewedBoardsByCategory(HttpServletRequest request, String category) {
+		// 액세스 토큰 추출
+		Optional<String> accessTokenOpt = jwtService.extractAccessToken(request);
+
+		// 액세스 토큰이 존재하지 않거나 유효하지 않다면 에러 응답 반환
+		if (accessTokenOpt.isEmpty() || !jwtService.isTokenValid(accessTokenOpt.get())) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+		}
+
+		// 액세스 토큰에서 로그인 아이디 추출
+		Optional<String> loginIdOpt = jwtService.extractId(accessTokenOpt.get());
+
+		// 로그인 아이디가 존재하지 않으면 에러 응답 반환
+		if (loginIdOpt.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+		}
+
+		// 로그인 아이디로 사용자 조회
+		User user = userRepository.findByLoginId(loginIdOpt.get()).orElseThrow(() -> new RuntimeException("User not found"));
+
+		List<Click> clicks = clickRepository.findByUser(user);
+
+		if (clicks.isEmpty()) {
+			return ResponseEntity.notFound().build();
+		}
+
+		List<BoardDTO> boardDTOs = clicks.stream()
+			.map(click -> click.getBoard())
+			.filter(board -> board != null && category.equalsIgnoreCase(board.getCategoryG().getCategoryName()))
+			.map(this::convertToDto)
+			.collect(Collectors.toList());
+
+		return ResponseEntity.ok(boardDTOs);
+	}
+
+	private BoardDTO convertToDto(Board board){
+		return new BoardDTO(board);
+	}
 }
