@@ -112,21 +112,18 @@ public class MypageController {
 		return ResponseEntity.ok(resultPage);
 	}
 
-	// 최근 기록
+	// 최근 기록 (최대 40개까지만)
 	@GetMapping("/blog/recently")
-	public ResponseEntity<Page<BoardDTO>> getRecentlyViewedBlogBoards(HttpServletRequest request,
-		@RequestParam(defaultValue = "0") int page) {
-		return getRecentlyViewedBoardsByCategory(request,"blog", PageRequest.of(page, 10));
+	public ResponseEntity<List<BoardDTO>> getRecentlyViewedBlogBoards(HttpServletRequest request) {
+		return getRecentlyViewedBoardsByCategory(request,"blog");
 	}
 
 	@GetMapping("/vlog/recently")
-	public ResponseEntity<Page<BoardDTO>> getRecentlyViewedVlogBoards(HttpServletRequest request,
-		@RequestParam(defaultValue = "0") int page) {
-		return getRecentlyViewedBoardsByCategory(request,"vlog", PageRequest.of(page, 10));
+	public ResponseEntity<List<BoardDTO>> getRecentlyViewedVlogBoards(HttpServletRequest request) {
+		return getRecentlyViewedBoardsByCategory(request,"vlog");
 	}
 
-	private ResponseEntity<Page<BoardDTO>> getRecentlyViewedBoardsByCategory(HttpServletRequest request, String category, Pageable pageable) {
-		// 액세스 토큰 추출
+	private ResponseEntity<List<BoardDTO>> getRecentlyViewedBoardsByCategory(HttpServletRequest request, String category) {		// 액세스 토큰 추출
 		Optional<String> accessTokenOpt = jwtService.extractAccessToken(request);
 
 		// 액세스 토큰이 존재하지 않거나 유효하지 않다면 에러 응답 반환
@@ -145,7 +142,7 @@ public class MypageController {
 		// 로그인 아이디로 사용자 조회
 		User user = userRepository.findByLoginId(loginIdOpt.get()).orElseThrow(() -> new RuntimeException("User not found"));
 
-		Page<Click> clicks = clickRepository.findByUser(user, pageable);
+		Page<Click> clicks = clickRepository.findByUser(user, PageRequest.of(0, 40));
 
 		if (clicks.isEmpty()) {
 			return ResponseEntity.notFound().build();
@@ -155,17 +152,13 @@ public class MypageController {
 			.map(click -> click.getBoard().getId())
 			.collect(Collectors.toList());
 
-		Page<Board> boards = boardRepository.findByIdInAndCategoryG_CategoryNameIgnoreCase(boardIds,
-			category,
-			pageable);
+		List<Board> boards = boardRepository.findByIdInAndCategoryG_CategoryNameIgnoreCase(boardIds, category);
 
-		List<BoardDTO> boardDTOs = boards.getContent().stream()
+		List<BoardDTO> boardDTOs = boards.stream()
 			.map(this::convertToDto)
 			.collect(Collectors.toList());
 
-		PageImpl<BoardDTO> resultPage = new PageImpl<>(boardDTOs, pageable, boards.getTotalElements());
-
-		return ResponseEntity.ok(resultPage);
+		return ResponseEntity.ok(boardDTOs);
 	}
 
 	private BoardDTO convertToDto(Board board){

@@ -5,9 +5,7 @@ import com.example.vblogserver.domain.category.entity.CategoryG;
 import com.example.vblogserver.domain.category.entity.CategoryM;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,5 +27,5 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     //카테고리 조회용. 최신 순으로 데이터 검색
     List<Board> findByCategoryGAndCategoryMOrderByCreatedDateDesc(CategoryG categoryG, CategoryM categoryM);
 
-    Page<Board> findByIdInAndCategoryG_CategoryNameIgnoreCase(List<Long> ids, String categoryName, Pageable pageable);
+    List<Board> findByIdInAndCategoryG_CategoryNameIgnoreCase(List<Long> ids, String categoryName);
 }
