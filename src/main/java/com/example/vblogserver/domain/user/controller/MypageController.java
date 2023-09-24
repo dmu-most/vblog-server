@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.vblogserver.domain.board.dto.BoardDTO;
 import com.example.vblogserver.domain.board.dto.MainBoardDTO;
 import com.example.vblogserver.domain.board.entity.Board;
+import com.example.vblogserver.domain.board.repository.BoardRepository;
 import com.example.vblogserver.domain.bookmark.dto.BookmarkDTO;
 import com.example.vblogserver.domain.bookmark.entity.Bookmark;
 import com.example.vblogserver.domain.bookmark.entity.BookmarkFolder;
@@ -52,6 +53,7 @@ public class MypageController {
 	private final BookmarkRepository bookmarkRepository;
 	private final BookmarkFolderRepository bookmarkFolderRepository;
 	private final ReviewRepository reviewRepository;
+	private final BoardRepository boardRepository;
 
 	// 리뷰 조회 (페이징 처리 : 10개)
 	@GetMapping("/blog/reviews")
@@ -117,16 +119,18 @@ public class MypageController {
 
 	// 최근 기록
 	@GetMapping("/blog/recently")
-	public ResponseEntity<List<BoardDTO>> getRecentlyViewedBlogBoards(HttpServletRequest request) {
-		return getRecentlyViewedBoardsByCategory(request, "blog");
+	public ResponseEntity<Page<BoardDTO>> getRecentlyViewedBlogBoards(HttpServletRequest request,
+		@RequestParam(defaultValue = "0") int page) {
+		return getRecentlyViewedBoardsByCategory(request,"blog", PageRequest.of(page, 10));
 	}
 
 	@GetMapping("/vlog/recently")
-	public ResponseEntity<List<BoardDTO>> getRecentlyViewedVlogBoards(HttpServletRequest request) {
-		return getRecentlyViewedBoardsByCategory(request, "vlog");
+	public ResponseEntity<Page<BoardDTO>> getRecentlyViewedVlogBoards(HttpServletRequest request,
+		@RequestParam(defaultValue = "0") int page) {
+		return getRecentlyViewedBoardsByCategory(request,"vlog", PageRequest.of(page, 10));
 	}
 
-	private ResponseEntity<List<BoardDTO>> getRecentlyViewedBoardsByCategory(HttpServletRequest request, String category) {
+	private ResponseEntity<Page<BoardDTO>> getRecentlyViewedBoardsByCategory(HttpServletRequest request, String category, Pageable pageable) {
 		// 액세스 토큰 추출
 		Optional<String> accessTokenOpt = jwtService.extractAccessToken(request);
 
@@ -146,19 +150,27 @@ public class MypageController {
 		// 로그인 아이디로 사용자 조회
 		User user = userRepository.findByLoginId(loginIdOpt.get()).orElseThrow(() -> new RuntimeException("User not found"));
 
-		List<Click> clicks = clickRepository.findByUser(user);
+		Page<Click> clicks = clickRepository.findByUser(user, pageable);
 
 		if (clicks.isEmpty()) {
 			return ResponseEntity.notFound().build();
 		}
 
-		List<BoardDTO> boardDTOs = clicks.stream()
-			.map(click -> click.getBoard())
-			.filter(board -> board != null && category.equalsIgnoreCase(board.getCategoryG().getCategoryName()))
+		List<Long> boardIds = clicks.getContent().stream()
+			.map(click -> click.getBoard().getId())
+			.collect(Collectors.toList());
+
+		Page<Board> boards = boardRepository.findByIdInAndCategoryG_CategoryNameIgnoreCase(boardIds,
+			category,
+			pageable);
+
+		List<BoardDTO> boardDTOs = boards.getContent().stream()
 			.map(this::convertToDto)
 			.collect(Collectors.toList());
 
-		return ResponseEntity.ok(boardDTOs);
+		PageImpl<BoardDTO> resultPage = new PageImpl<>(boardDTOs, pageable, boards.getTotalElements());
+
+		return ResponseEntity.ok(resultPage);
 	}
 
 	private BoardDTO convertToDto(Board board){
