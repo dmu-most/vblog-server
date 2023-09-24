@@ -5,12 +5,19 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.vblogserver.domain.board.dto.BoardDTO;
@@ -18,6 +25,9 @@ import com.example.vblogserver.domain.board.dto.MainBoardDTO;
 import com.example.vblogserver.domain.board.entity.Board;
 import com.example.vblogserver.domain.bookmark.dto.BookmarkDTO;
 import com.example.vblogserver.domain.bookmark.entity.Bookmark;
+import com.example.vblogserver.domain.bookmark.entity.BookmarkFolder;
+import com.example.vblogserver.domain.bookmark.repository.BookmarkFolderRepository;
+import com.example.vblogserver.domain.bookmark.repository.BookmarkRepository;
 import com.example.vblogserver.domain.click.entity.Click;
 import com.example.vblogserver.domain.click.repository.ClickRepository;
 import com.example.vblogserver.domain.review.controller.ReviewService;
@@ -34,27 +44,29 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/mypage")
+@RequestMapping("/myinfo")
 public class MypageController {
-	private final UserService userService;
 	private final JwtService jwtService;
 	private final UserRepository userRepository;
-	private final ReviewRepository reviewRepository;
-	private final ReviewService reviewService;
 	private final ClickRepository clickRepository;
+	private final BookmarkRepository bookmarkRepository;
+	private final BookmarkFolderRepository bookmarkFolderRepository;
+	private final ReviewRepository reviewRepository;
 
+	// 리뷰 조회 (페이징 처리 : 10개)
 	@GetMapping("/blog/reviews")
-	public ResponseEntity<List<ReviewDTO>> getUserBlogReviews(HttpServletRequest request) {
-		return getUserReviewsByCategory(request, "blog");
+	public ResponseEntity<Page<ReviewDTO>> getUserBlogReviews(HttpServletRequest request,
+		@RequestParam(defaultValue = "0") int page) {
+		return getUserReviewsByCategory(request, "blog", PageRequest.of(page, 10));
 	}
 
 	@GetMapping("/vlog/reviews")
-	public ResponseEntity<List<ReviewDTO>> getUserVlogReviews(HttpServletRequest request) {
-		return getUserReviewsByCategory(request, "vlog");
+	public ResponseEntity<Page<ReviewDTO>> getUserVlogReviews(HttpServletRequest request,
+		@RequestParam(defaultValue = "0") int page) {
+		return getUserReviewsByCategory(request, "vlog", PageRequest.of(page, 10));
 	}
 
-	private ResponseEntity<List<ReviewDTO>> getUserReviewsByCategory(HttpServletRequest request, String category) {
-		// 액세스 토큰 추출
+	private ResponseEntity<Page<ReviewDTO>> getUserReviewsByCategory(HttpServletRequest request, String category, Pageable pageable) {		// 액세스 토큰 추출
 		Optional<String> accessTokenOpt = jwtService.extractAccessToken(request);
 
 		// 액세스 토큰이 존재하지 않거나 유효하지 않다면 에러 응답 반환
@@ -73,15 +85,13 @@ public class MypageController {
 		// 로그인 아이디로 사용자 조회
 		User user = userRepository.findByLoginId(loginIdOpt.get()).orElseThrow(() -> new RuntimeException("User not found"));
 
-		List<Review> reviews = user.getReviews().stream()
-			.filter(review -> review.getBoard().getCategoryG().getCategoryName().equalsIgnoreCase(category))
-			.collect(Collectors.toList());
+		Page<Review> reviews = reviewRepository.findReviewsByUserAndBoard_CategoryG_CategoryNameIgnoreCase(user, category, pageable);
 
 		if (reviews.isEmpty()) {
 			return ResponseEntity.notFound().build();
 		}
 
-		List<ReviewDTO> reviewDTOs = reviews.stream()
+		List<ReviewDTO> reviewDTOs = reviews.getContent().stream()
 			.map(review -> {
 				ReviewDTO reviewDTO = new ReviewDTO();
 				reviewDTO.setReviewId(review.getId());
@@ -91,7 +101,7 @@ public class MypageController {
 
 				// Category 정보 설정
 				if (review.getBoard().getCategoryG() != null) {
-					reviewDTO.setCategory(review.getBoard().getCategoryG().getCategoryName());  // CategoryG의 getName() 메소드는 해당 객체에서 구현되어야 함.
+					reviewDTO.setCategory(review.getBoard().getCategoryG().getCategoryName());
 				}
 
 				reviewDTO.setGrade(review.getGrade());
@@ -100,61 +110,12 @@ public class MypageController {
 			})
 			.collect(Collectors.toList());
 
-		return ResponseEntity.ok(reviewDTOs);
+		PageImpl<ReviewDTO> resultPage = new PageImpl<>(reviewDTOs, pageable, reviews.getTotalElements());
+
+		return ResponseEntity.ok(resultPage);
 	}
 
-	@GetMapping("/blog/scraps")
-	public ResponseEntity<List<BookmarkDTO>> getUserBlogBookmarks(HttpServletRequest request) {
-		return getUserBookmarksByCategory(request, "blog");
-	}
-
-	@GetMapping("/vlog/scraps")
-	public ResponseEntity<List<BookmarkDTO>> getUserVlogBookmarks(HttpServletRequest request) {
-		return getUserBookmarksByCategory(request, "vlog");
-	}
-
-	private ResponseEntity<List<BookmarkDTO>> getUserBookmarksByCategory(HttpServletRequest request, String category) {
-		// 액세스 토큰 추출
-		Optional<String> accessTokenOpt = jwtService.extractAccessToken(request);
-
-		// 액세스 토큰이 존재하지 않거나 유효하지 않다면 에러 응답 반환
-		if (accessTokenOpt.isEmpty() || !jwtService.isTokenValid(accessTokenOpt.get())) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-		}
-
-		// 액세스 토큰에서 로그인 아이디 추출
-		Optional<String> loginIdOpt = jwtService.extractId(accessTokenOpt.get());
-
-		// 로그인 아이디가 존재하지 않으면 에러 응답 반환
-		if (loginIdOpt.isEmpty()) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-		}
-
-		// 로그인 아이디로 사용자 조회
-		User user = userRepository.findByLoginId(loginIdOpt.get()).orElseThrow(() -> new RuntimeException("User not found"));
-
-		List<Bookmark> bookmarks = user.getBookmarks().stream()
-			.filter(bookmark -> bookmark.getBoard().getCategoryG().getCategoryName().equalsIgnoreCase(category))
-			.collect(Collectors.toList());
-
-		if (bookmarks.isEmpty()) {
-			return ResponseEntity.notFound().build();
-		}
-
-		List<BookmarkDTO> bookmarkDTOs = bookmarks.stream()
-			.map(bookmark -> {
-				BookmarkDTO bookmarkDto = new BookmarkDTO();
-				bookmarkDto.setId(bookmark.getId());
-				bookmarkDto.setBookmark(bookmark.getBookmark());
-				bookmarkDto.setBoardId(bookmark.getBoard().getId());  // 게시글 ID 설정
-
-				return bookmarkDto;
-			})
-			.collect(Collectors.toList());
-
-		return ResponseEntity.ok(bookmarkDTOs);
-	}
-
+	// 최근 기록
 	@GetMapping("/blog/recently")
 	public ResponseEntity<List<BoardDTO>> getRecentlyViewedBlogBoards(HttpServletRequest request) {
 		return getRecentlyViewedBoardsByCategory(request, "blog");
