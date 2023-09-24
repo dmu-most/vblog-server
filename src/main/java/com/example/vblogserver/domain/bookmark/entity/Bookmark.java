@@ -7,9 +7,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Bookmark {
@@ -33,6 +35,10 @@ public class Bookmark {
     @JoinColumn(name = "USER_ID")
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "folderId")
+    private BookmarkFolder bookmarkFolder;
+
     @Builder
     public Bookmark(Boolean bookmark, Board board, User user) {
         this.bookmark = bookmark;
@@ -40,4 +46,7 @@ public class Bookmark {
         this.user = user;
     }
 
+    public void setBookmarkFolder(BookmarkFolder bookmarkFolder) {
+        this.bookmarkFolder = bookmarkFolder;
+    }
 }
