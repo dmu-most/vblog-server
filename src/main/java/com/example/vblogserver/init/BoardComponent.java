@@ -105,6 +105,8 @@ public class BoardComponent implements CommandLineRunner {
                         board.setThumbnails(json.optString("thumbnails"));
                         /*
                         // blog 일 경우 API를 이용하여 썸네일 이미지 url 을 받아옴
+                        board.setThumbnails(json.optString("thumbnails"));
+                        /*
                         if(z==1) board.setThumbnails(json.optString("thumbnails"));
                             // vlog 일 경우 이미지 크롤링하여 이미지 url을 받아옴
                         else if(z==2) {
@@ -161,9 +163,15 @@ public class BoardComponent implements CommandLineRunner {
         for (Board board : boardsCopy) {
             // 게시글 ID 조회
             Long id = board.getId();
+
+            //임시조치
+            board.setThumbnails("http://ec2-3-39-126-215.ap-northeast-2.compute.amazonaws.com/img/"+id+".png");
             //naverImgSaveService.scrapeFirstImage2(board.getThumbnails(), id);
+            /*
             if(board.getThumbnails().equals("")) board.setThumbnails("");
             else board.setThumbnails("http://ec2-3-39-126-215.ap-northeast-2.compute.amazonaws.com/img/"+id+".png");
+
+             */
 
             //board.setThumbnails(thumbnailsLink);
             boards.add(board);
