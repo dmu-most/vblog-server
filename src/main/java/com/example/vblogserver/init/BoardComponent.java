@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -103,6 +102,8 @@ public class BoardComponent implements CommandLineRunner {
                         board.setTitle(get_title.replaceAll("<b>|</b>", ""));
                         board.setLink(json.optString("link"));
                         String thumbnailsLink = "";
+                        board.setThumbnails(json.optString("thumbnails"));
+                        /*
                         // blog 일 경우 API를 이용하여 썸네일 이미지 url 을 받아옴
                         if(z==1) board.setThumbnails(json.optString("thumbnails"));
                             // vlog 일 경우 이미지 크롤링하여 이미지 url을 받아옴
@@ -114,6 +115,8 @@ public class BoardComponent implements CommandLineRunner {
                                 board.setThumbnails(json.optString("thumbnails"));
                             }
                         }
+
+                         */
                         String get_description = json.optString("description");
                         board.setDescription(get_description.replaceAll("<b>|</b>", ""));
                         board.setHashtag(json.optString("heshtag"));
@@ -175,7 +178,7 @@ public class BoardComponent implements CommandLineRunner {
         tmpGrade.updateGrade();
         // 테스트용 데이터 insert : 찜 insert
         tmpBookMark.updateTmpBookMark();
-        // 테스트용 데이터 insert : 찜 insert
+        // 테스트용 데이터 insert : 클릭 정보 insert
         tmpClick.updateTmpClick();
 
     }

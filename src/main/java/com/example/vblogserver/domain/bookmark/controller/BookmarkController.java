@@ -57,7 +57,6 @@ public class BookmarkController {
             }
 
             //LoginID 로 userID 조회
-
             User user;
             try {
                 user = userRepository.findByLoginId(userId).orElseThrow(() -> new IllegalArgumentException(userId + "을 찾을 수 없습니다"));
@@ -66,7 +65,6 @@ public class BookmarkController {
             }
 
                 Bookmark newBookmark = Bookmark.builder()
-                        .bookmark(bookmarkOnOff)
                         .board(board)
                         .user(user)
                         .build();

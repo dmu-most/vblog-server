@@ -20,10 +20,6 @@ public class Bookmark {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", updatable = false)
     private Long id;
-    //찜 여부 (true, false)
-    private Boolean bookmark;
-
-    private Long contentId;
 
     // 게시글 ID - 수정
     @ManyToOne(fetch = FetchType.LAZY)
@@ -40,10 +36,11 @@ public class Bookmark {
     private BookmarkFolder bookmarkFolder;
 
     @Builder
-    public Bookmark(Boolean bookmark, Board board, User user) {
-        this.bookmark = bookmark;
+    public Bookmark(Board board, User user, BookmarkFolder bookmarkFolder) {
+        //this.bookmark = bookmark;
         this.board = board;
         this.user = user;
+        this.bookmarkFolder = bookmarkFolder;
     }
 
     public void setBookmarkFolder(BookmarkFolder bookmarkFolder) {

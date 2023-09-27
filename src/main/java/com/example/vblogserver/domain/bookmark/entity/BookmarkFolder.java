@@ -42,4 +42,10 @@ public class BookmarkFolder {
 
 	@CreatedDate
 	private LocalDateTime createdDate;
+
+	public BookmarkFolder(String name, User user, List<Bookmark> bookmarks) {
+		this.name = name;
+		this.user = user;
+		this.bookmarks = bookmarks;
+	}
 }
