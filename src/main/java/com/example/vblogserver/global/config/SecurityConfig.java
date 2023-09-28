@@ -64,7 +64,7 @@ public class SecurityConfig {
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		System.out.println("filterChain 진입");
 
-		http.cors(withDefaults()) // CORS 설정 추가
+		http.cors(c -> c.configurationSource(corsConfigurationSource())) // CORS 설정 추가
 			.csrf((csrf) -> csrf.disable())
 			.httpBasic((httpBasic) -> httpBasic.disable())
 			.formLogin((formLogin) -> formLogin.disable());
