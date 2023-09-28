@@ -11,4 +11,5 @@ public interface BookmarkFolderRepository extends JpaRepository<BookmarkFolder, 
 	List<BookmarkFolder> findByUserOrderByCreatedDateDesc(User user);
 	List<BookmarkFolder> findByUser(User user);
 
+	List<BookmarkFolder> findByNameAndUser(String name, User user);
 }

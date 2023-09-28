@@ -31,6 +31,7 @@ public class BookmarkFolder {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	// 폴더명
 	private String name;
 
 	@ManyToOne(fetch = FetchType.LAZY)
