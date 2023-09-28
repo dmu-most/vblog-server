@@ -161,7 +161,7 @@ public class SecurityConfig {
 	CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
 		configuration.setAllowedOrigins(
-			Arrays.asList("http://localhost:3000", "http://dmu-vblog.s3-website.ap-northeast-2.amazonaws.com"));
+			Arrays.asList("http://localhost:3000", "http://dmu-vblog.s3-website.ap-northeast-2.amazonaws.com", "http://ec2-3-39-126-215.ap-northeast-2.compute.amazonaws.com"));
 		configuration.setAllowedMethods(Arrays.asList("HEAD", "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 		configuration.setAllowCredentials(true);
 		configuration.setAllowedHeaders(Arrays.asList("Authorization", "Refresh", "Cache-Control", "Content-Type", "Location"));
