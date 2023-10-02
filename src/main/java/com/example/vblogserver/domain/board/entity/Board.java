@@ -27,12 +27,6 @@ public class Board {
     @Column(name = "id", updatable = false)
     private Long id;
 
-
-    //리뷰
-    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
-    private List<Review> reviews = new ArrayList<>();
-
     //작성자
     private String writer;
 
