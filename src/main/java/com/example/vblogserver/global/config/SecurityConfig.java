@@ -166,7 +166,9 @@ public class SecurityConfig {
 			Arrays.asList("http://localhost:3000", "http://dmu-vblog.s3-website.ap-northeast-2.amazonaws.com", "http://ec2-3-39-126-215.ap-northeast-2.compute.amazonaws.com"));
 		configuration.setAllowedMethods(Arrays.asList("HEAD", "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 		configuration.setAllowCredentials(true);
-		configuration.setAllowedHeaders(Arrays.asList("Authorization", "Refresh", "Cache-Control", "Content-Type", "Location"));
+
+		// 모든 요청 헤더를 허용
+		configuration.setAllowedHeaders(Arrays.asList("*"));
 
 		/* 응답 헤더 설정 추가*/
 		configuration.setExposedHeaders(Arrays.asList("Authorization", "Refresh", "Location"));
