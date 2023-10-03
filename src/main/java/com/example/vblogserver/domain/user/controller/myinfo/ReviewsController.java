@@ -1,5 +1,6 @@
 package com.example.vblogserver.domain.user.controller.myinfo;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -16,8 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.vblogserver.domain.board.repository.BoardRepository;
-import com.example.vblogserver.domain.click.repository.ClickRepository;
 import com.example.vblogserver.domain.review.dto.ReviewDTO;
 import com.example.vblogserver.domain.review.entity.Review;
 import com.example.vblogserver.domain.review.repository.ReviewRepository;
@@ -75,28 +74,30 @@ public class ReviewsController {
 		Page<Review> reviews = reviewRepository.findReviewsByUserAndBoard_CategoryG_CategoryNameIgnoreCase(user,
 			category, pageable);
 
+		List<ReviewDTO> reviewDTOs;
+
 		if (reviews.isEmpty()) {
-			return ResponseEntity.notFound().build();
+			reviewDTOs = new ArrayList<>();
+		} else {
+			reviewDTOs = reviews.getContent().stream()
+				.map(review -> {
+					ReviewDTO reviewDTO = new ReviewDTO();
+					reviewDTO.setReviewId(review.getId());
+					reviewDTO.setContent(review.getContent());
+					reviewDTO.setCreatedDate(review.getCreatedDate());
+					reviewDTO.setBoardId(review.getBoard().getId());  // 게시글 ID 설정
+
+					// Category 정보 설정
+					if (review.getBoard().getCategoryG() != null) {
+						reviewDTO.setCategory(review.getBoard().getCategoryG().getCategoryName());
+					}
+
+					reviewDTO.setGrade(review.getGrade());
+
+					return reviewDTO;
+				})
+				.collect(Collectors.toList());
 		}
-
-		List<ReviewDTO> reviewDTOs = reviews.getContent().stream()
-			.map(review -> {
-				ReviewDTO reviewDTO = new ReviewDTO();
-				reviewDTO.setReviewId(review.getId());
-				reviewDTO.setContent(review.getContent());
-				reviewDTO.setCreatedDate(review.getCreatedDate());
-				reviewDTO.setBoardId(review.getBoard().getId());  // 게시글 ID 설정
-
-				// Category 정보 설정
-				if (review.getBoard().getCategoryG() != null) {
-					reviewDTO.setCategory(review.getBoard().getCategoryG().getCategoryName());
-				}
-
-				reviewDTO.setGrade(review.getGrade());
-
-				return reviewDTO;
-			})
-			.collect(Collectors.toList());
 
 		PageImpl<ReviewDTO> resultPage = new PageImpl<>(reviewDTOs, pageable, reviews.getTotalElements());
 
