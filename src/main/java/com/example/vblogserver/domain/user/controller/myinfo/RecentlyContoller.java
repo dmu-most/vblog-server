@@ -1,5 +1,6 @@
 package com.example.vblogserver.domain.user.controller.myinfo;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -18,7 +19,6 @@ import com.example.vblogserver.domain.board.entity.Board;
 import com.example.vblogserver.domain.board.repository.BoardRepository;
 import com.example.vblogserver.domain.click.entity.Click;
 import com.example.vblogserver.domain.click.repository.ClickRepository;
-import com.example.vblogserver.domain.review.repository.ReviewRepository;
 import com.example.vblogserver.domain.user.entity.User;
 import com.example.vblogserver.domain.user.repository.UserRepository;
 import com.example.vblogserver.global.jwt.service.JwtService;
@@ -48,7 +48,8 @@ public class RecentlyContoller {
 		return getRecentlyViewedBoardsByCategory(request,"vlog");
 	}
 
-	private ResponseEntity<List<BoardDTO>> getRecentlyViewedBoardsByCategory(HttpServletRequest request, String category) {		// 액세스 토큰 추출
+	private ResponseEntity<List<BoardDTO>> getRecentlyViewedBoardsByCategory(HttpServletRequest request, String category) {
+		// 액세스 토큰 추출
 		Optional<String> accessTokenOpt = jwtService.extractAccessToken(request);
 
 		// 액세스 토큰이 존재하지 않거나 유효하지 않다면 에러 응답 반환
@@ -64,14 +65,9 @@ public class RecentlyContoller {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
 		}
 
-		// 로그인 아이디로 사용자 조회
 		User user = userRepository.findByLoginId(loginIdOpt.get()).orElseThrow(() -> new RuntimeException("User not found"));
 
 		Page<Click> clicks = clickRepository.findByUser(user, PageRequest.of(0, 40));
-
-		if (clicks.isEmpty()) {
-			return ResponseEntity.notFound().build();
-		}
 
 		List<Long> boardIds = clicks.getContent().stream()
 			.map(click -> click.getBoard().getId())
@@ -79,12 +75,17 @@ public class RecentlyContoller {
 
 		List<Board> boards = boardRepository.findByIdInAndCategoryG_CategoryNameIgnoreCase(boardIds, category);
 
+		if (boards.isEmpty()) {
+			return ResponseEntity.ok(new ArrayList<>());
+		}
+
 		List<BoardDTO> boardDTOs = boards.stream()
 			.map(this::convertToDto)
 			.collect(Collectors.toList());
 
 		return ResponseEntity.ok(boardDTOs);
 	}
+
 
 	private BoardDTO convertToDto(Board board){
 		return new BoardDTO(board);
