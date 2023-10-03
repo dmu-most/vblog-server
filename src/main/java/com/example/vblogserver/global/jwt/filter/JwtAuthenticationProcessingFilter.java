@@ -93,18 +93,6 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 	}
 
 	/**
-	 * [리프레시 토큰 재발급 & DB에 리프레시 토큰 업데이트 메소드]
-	 * jwtService.createRefreshToken()으로 리프레시 토큰 재발급 후
-	 * DB에 재발급한 리프레시 토큰 업데이트 후 Flush
-	 */
-	private String reIssueRefreshToken(User user) {
-		String reIssuedRefreshToken = jwtService.createRefreshToken();
-		user.updateRefreshToken(reIssuedRefreshToken);
-		userRepository.saveAndFlush(user);
-		return reIssuedRefreshToken;
-	}
-
-	/**
 	 * [액세스 토큰 체크 & 인증 처리 메소드]
 	 * request에서 extractAccessToken()으로 액세스 토큰 추출 후, isTokenValid()로 유효한 토큰인지 검증
 	 * 유효한 토큰이면, 액세스 토큰에서 extractId로 loginId를 추출한 후 findByLoginId()로 해당 아이디를 사용하는 유저 객체 반환

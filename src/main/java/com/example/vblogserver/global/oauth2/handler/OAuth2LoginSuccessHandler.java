@@ -1,7 +1,5 @@
 package com.example.vblogserver.global.oauth2.handler;
 
-import com.example.vblogserver.domain.user.entity.Role;
-import com.example.vblogserver.domain.user.entity.User;
 import com.example.vblogserver.domain.user.repository.UserRepository;
 import com.example.vblogserver.global.jwt.service.JwtService;
 import com.example.vblogserver.global.oauth2.CustomOAuth2User;
@@ -49,14 +47,15 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     }
 
     private Map<String,String> loginSuccess(HttpServletResponse response, CustomOAuth2User oAuth2User) throws IOException {
+        String loginId = oAuth2User.getLoginId(); // 로그인 ID 추출
         String accessToken = jwtService.createAccessToken(oAuth2User.getLoginId());
-        String refreshToken = jwtService.createRefreshToken();
+        String refreshToken = jwtService.createRefreshToken(loginId);
 
         response.addHeader(jwtService.getAccessHeader(), "Bearer " + accessToken);
         response.addHeader(jwtService.getRefreshHeader(), "Bearer " + refreshToken);
 
         jwtService.sendAccessAndRefreshToken(response, accessToken, refreshToken);
-        userRepository.findByLoginId(oAuth2User.getLoginId())
+        userRepository.findByLoginId(loginId)
             .ifPresent(user -> {
                 user.updateRefreshToken(refreshToken);
                 userRepository.saveAndFlush(user);

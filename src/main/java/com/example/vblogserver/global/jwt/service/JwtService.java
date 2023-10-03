@@ -10,6 +10,8 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.example.vblogserver.domain.user.repository.UserRepository;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
@@ -65,11 +67,12 @@ public class JwtService {
 	 * RefreshToken 생성
 	 * RefreshToken은 Claim에 email도 넣지 않으므로 withClaim() X
 	 */
-	public String createRefreshToken() {
+	public String createRefreshToken(String loginId) {
 		Date now = new Date();
 		return JWT.create()
 			.withSubject(REFRESH_TOKEN_SUBJECT)
 			.withExpiresAt(new Date(now.getTime() + refreshTokenExpirationPeriod))
+			.withClaim(ID_CLAIM, loginId)
 			.sign(Algorithm.HMAC512(secretKey));
 	}
 
@@ -175,5 +178,20 @@ public class JwtService {
 			log.error("유효하지 않은 토큰입니다. {}", e.getMessage());
 			return false;
 		}
+	}
+
+	/**
+	 * 요청시 액세스 토큰의 만료 여부를 체크하고 만료되었을 경우에만 재발급
+	 * @param token
+	 * @return
+	 */
+	public boolean isTokenExpired(String token) {
+		Claims claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
+		Date expiration = claims.getExpiration();
+		return expiration.before(new Date());
+	}
+
+	public void sendRefreshToken(HttpServletResponse response, String refreshToken) {
+		response.setHeader("Refresh", refreshToken);
 	}
 }

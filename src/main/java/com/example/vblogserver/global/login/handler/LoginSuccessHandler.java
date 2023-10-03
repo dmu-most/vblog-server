@@ -33,7 +33,7 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 										Authentication authentication) throws IOException {
 		String loginId = extractUsername(authentication); // 인증 정보에서 Username(loginId) 추출
 		String accessToken = jwtService.createAccessToken(loginId); // JwtService의 createAccessToken을 사용하여 AccessToken 발급
-		String refreshToken = jwtService.createRefreshToken(); // JwtService의 createRefreshToken을 사용하여 RefreshToken 발급
+		String refreshToken = jwtService.createRefreshToken(loginId); // JwtService의 createRefreshToken을 사용하여 RefreshToken 발급
 
 		userRepository.findByLoginId(loginId)
 				.ifPresent(user -> {
