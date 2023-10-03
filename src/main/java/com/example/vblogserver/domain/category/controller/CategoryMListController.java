@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,7 +68,10 @@ public class CategoryMListController {
         for (Board board : boardsWithCategoryGAndM) {
             MainBoardDTO mainBoardDTO = new MainBoardDTO();
             mainBoardDTO.setContentId(board.getId());
-            mainBoardDTO.setContentDate(board.getCreatedDate());
+            LocalDate ContentDate = board.getCreatedDate();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            String formattedDateTime = ContentDate.format(formatter);
+            mainBoardDTO.setContentDate(formattedDateTime);
             mainBoardDTO.setContentTitle(board.getTitle());
             mainBoardDTO.setContent(board.getDescription());
             mainBoardDTO.setHeart(board.getLikeCount() != null ? board.getLikeCount() : 0);

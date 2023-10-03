@@ -47,6 +47,7 @@ public class ClickController {
             User user;
             try {
                 user = userRepository.findByLoginId(userId).orElseThrow(() -> new IllegalArgumentException(userId + "을 찾을 수 없습니다"));
+                System.out.println(user.getId());
             } catch (IllegalArgumentException e) {
                 return ResponseEntity.ok().body(Map.of("result", false, "reason", userId + "을 찾을 수 없습니다"));
             }
@@ -54,6 +55,12 @@ public class ClickController {
             // BoardID 로 게시글 조회
             Board board = boardService.getBoardById(contentId);
 
+            // 이미 클릭한 내역이 있는지 확인
+            boolean hasClicked = clickRepository.existsByBoardAndUser(board, user);
+
+            if (hasClicked) {
+                return ResponseEntity.ok().body(Map.of("result", false, "reason", "이미 클릭한 게시글입니다."));
+            }
             // Click 여부 저장
             Click setclick = Click.builder()
                     .board(board)

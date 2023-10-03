@@ -30,9 +30,6 @@ public class Review {
     @JoinColumn(name = "board_id")
     private Board board;
 
-
-
-
     // 리뷰 작성자
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "loginId")

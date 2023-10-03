@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,7 +54,10 @@ public class MainListController {
     // Board 엔티티를 원하는 형태의 DTO로 변환
     private MainBoardDTO convertToClientDataDTO(Board board) {
         MainBoardDTO clientDataDTO = new MainBoardDTO();
-        clientDataDTO.setContentDate(board.getCreatedDate());
+        LocalDate ContentDate = board.getCreatedDate();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        String formattedDateTime = ContentDate.format(formatter);
+        clientDataDTO.setContentDate(formattedDateTime);
         clientDataDTO.setContentTitle(board.getTitle());
         clientDataDTO.setUserName(board.getWriter());
         clientDataDTO.setContent(board.getDescription());

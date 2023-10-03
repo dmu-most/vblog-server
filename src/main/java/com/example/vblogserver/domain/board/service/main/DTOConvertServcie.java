@@ -4,6 +4,8 @@ import com.example.vblogserver.domain.board.dto.MainBoardDTO;
 import com.example.vblogserver.domain.board.entity.Board;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,7 +24,10 @@ public class DTOConvertServcie {
 
     private MainBoardDTO convertToClientDataDTO(Board board) {
         MainBoardDTO clientDataDTO = new MainBoardDTO();
-        clientDataDTO.setContentDate(board.getCreatedDate());
+        LocalDate ContentDate = board.getCreatedDate();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        String formattedDateTime = ContentDate.format(formatter);
+        clientDataDTO.setContentDate(formattedDateTime);
         clientDataDTO.setContentTitle(board.getTitle());
         clientDataDTO.setUserName(board.getWriter());
         clientDataDTO.setContent(board.getDescription());

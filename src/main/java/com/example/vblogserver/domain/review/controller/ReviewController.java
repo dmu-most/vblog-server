@@ -3,6 +3,7 @@ package com.example.vblogserver.domain.review.controller;
 import com.example.vblogserver.domain.board.entity.Board;
 import com.example.vblogserver.domain.board.service.BoardService;
 import com.example.vblogserver.domain.review.dto.ReviewDTO;
+import com.example.vblogserver.domain.review.dto.SeleteReviewDTO;
 import com.example.vblogserver.domain.review.entity.Review;
 import com.example.vblogserver.domain.review.repository.ReviewRepository;
 import com.example.vblogserver.domain.user.entity.User;
@@ -44,20 +45,20 @@ public class ReviewController {
 
     // 리뷰 조회
     @GetMapping("/{boardId}")
-    public ResponseEntity<List<ReviewDTO>> readReview(@PathVariable Long boardId) {
+    public ResponseEntity<List<SeleteReviewDTO>> readReview(@PathVariable Long boardId) {
         List<Review> reviews = reviewService.getReviewByBoardId(boardId);
 
         if (reviews.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
-        List<ReviewDTO> reviewDTOs = reviews.stream()
+        List<SeleteReviewDTO> reviewDTOs = reviews.stream()
                 .map(review -> {
-                    ReviewDTO reviewDTO = new ReviewDTO();
+                    SeleteReviewDTO reviewDTO = new SeleteReviewDTO();
                     reviewDTO.setReviewId(review.getId());
                     reviewDTO.setContent(review.getContent());
                     reviewDTO.setCreatedDate(review.getCreatedDate());
-                    reviewDTO.setUserId(review.getUser().getLoginId());
+                    reviewDTO.setUserName(review.getUser().getLoginId());
                     reviewDTO.setGrade(review.getGrade());
                     return reviewDTO;
                 })

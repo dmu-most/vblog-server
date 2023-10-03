@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.annotation.CreatedDate;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,7 +52,7 @@ public class Board {
     //게시글 작성 일자
     @CreatedDate
     @Column(name = "CREATED_DATE", updatable = false, nullable = false)
-    private String createdDate;
+    private LocalDate createdDate;
 
     //리뷰 count
     @ColumnDefault("0")
@@ -116,7 +117,7 @@ public class Board {
         this.hashtag = hashtag;
     }
 
-    public void setCreatedDate(String createdDate) {
+    public void setCreatedDate(LocalDate createdDate) {
         this.createdDate = createdDate;
     }
 

@@ -1,8 +1,7 @@
-package com.example.vblogserver.domain.click.entity;
+package com.example.vblogserver.domain.LikeInfo.entity;
 
 import com.example.vblogserver.domain.board.entity.Board;
 import com.example.vblogserver.domain.user.entity.User;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,37 +12,42 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Click {
+public class LikeInfo {
 
-    // Click ID
+    // 좋아요, 싫어요 ID
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "clickId", updatable = false)
-    private Long clickId;
+    @Column(name = "LikeId", updatable = false)
+    private Long LikeId;
 
-    // Click 한 게시글 ID
+    // true 일 경우 좋아요, false 일 경우 싫어요
+    private boolean likeInfo;
+
+    // 좋아요, 싫어요 클릭한 게시글 ID
     @ManyToOne
     @JoinColumn(name = "boardID")
     private Board board;
 
-    // 게시글을 Click 한 사용자 정보
+    // 좋아요, 싫어요 클릭한 사용자 정보
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userNo")
     private User user;
 
     @Builder
-    public Click(Board board, User user) {
+    public LikeInfo(boolean likeInfo, Board board, User user) {
+        this.likeInfo = likeInfo;
         this.board = board;
         this.user = user;
     }
 
-    public Long getClickId() {
-        return clickId;
+    public void setLikeInfo(boolean likeInfo) {
+        this.likeInfo = likeInfo;
     }
 
-    public void setClickId(Long clickId) {
-        this.clickId = clickId;
+    public boolean getLikeInfo() {
+        return likeInfo;
     }
+
 
     public Board getBoard() {
         return board;
@@ -53,4 +57,11 @@ public class Click {
         this.board = board;
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }
