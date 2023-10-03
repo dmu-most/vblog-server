@@ -1,10 +1,13 @@
 package com.example.vblogserver.domain.bookmark.repository;
 
 import com.example.vblogserver.domain.bookmark.entity.Bookmark;
+import com.example.vblogserver.domain.bookmark.entity.BookmarkFolder;
+import com.example.vblogserver.domain.user.entity.User;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Optional;
+import java.util.List;
 
 public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
-
+	List<BookmarkFolder> findByUser(User user);
 }

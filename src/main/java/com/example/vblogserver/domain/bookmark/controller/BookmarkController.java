@@ -3,6 +3,7 @@ package com.example.vblogserver.domain.bookmark.controller;
 import com.example.vblogserver.domain.board.entity.Board;
 import com.example.vblogserver.domain.board.service.BoardService;
 import com.example.vblogserver.domain.bookmark.dto.BookmarkDTO;
+import com.example.vblogserver.domain.bookmark.dto.BookmarkFolderDTO;
 import com.example.vblogserver.domain.bookmark.entity.Bookmark;
 import com.example.vblogserver.domain.bookmark.entity.BookmarkFolder;
 import com.example.vblogserver.domain.bookmark.repository.BookmarkFolderRepository;
@@ -128,7 +129,33 @@ public class BookmarkController {
 
         bookmarkFolderRepository.save(newBookmarkFolder);
 
-        return ResponseEntity.ok().body(Map.of("result", true));
+        return ResponseEntity.ok().body(Map.of("result", true, "name", newBookmarkFolder.getName()));
+
+    }
+
+    // 폴더 조회
+    @GetMapping("/myinfo/bookmark")
+    public ResponseEntity<Map<String, Object>> getUserFolders(HttpServletRequest request) {
+        String userId = jwtService.extractId(jwtService.extractAccessToken(request).get()).orElse(null); // 액세스 토큰에서 사용자 ID 추출
+
+        User user;
+        try {
+            user = userRepository.findByLoginId(userId).orElseThrow(() -> new IllegalArgumentException(userId + "을 찾을 수 없습니다"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.ok().body(Map.of("result", false, "reason", userId+"을 찾을 수 없습니다"));
+        }
+
+        List<BookmarkFolder> userFolders = bookmarkFolderRepository.findByUser(user);
+
+        List<BookmarkFolderDTO> dtoList = userFolders.stream()
+            .map(folder -> new BookmarkFolderDTO(folder.getId(), folder.getName()))
+            .collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("result", true);
+        result.put("folders", dtoList);
+
+        return ResponseEntity.ok().body(result);
     }
 
     // 폴더 속 찜한 게시글 조회
