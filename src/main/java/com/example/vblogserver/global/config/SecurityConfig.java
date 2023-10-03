@@ -76,7 +76,9 @@ public class SecurityConfig {
 		// 토큰 재발급 URL은 인증 없이 접근 가능하도록 설정. 나머지 API URL은 인증 필요
 		http.authorizeRequests((authReq)
 			-> authReq.requestMatchers( "/","/login","/signup", "/logout", "/check-email", "/check-id", "/login/**", "/token/**",
-						"/login/oauth2/code/**","/oauth2/code/**", "/myinfo/**", "myinfo/vlog/**","myinfo/blog/**","/img/**", "/css/**", "/js/**", "/favicon.ico", "/vblog-api.html", "/swagger-ui/**", "/api-docs/**").permitAll()
+						"/login/oauth2/code/**","/oauth2/code/**",
+				"/myinfo/**", "/myinfo/recently/**","/myinfo/reviews/**","/folder/**","/myinfo/bookmark/**","/bookmark/**",
+				"/img/**", "/css/**", "/js/**", "/favicon.ico", "/vblog-api.html", "/swagger-ui/**", "/api-docs/**").permitAll()
 				.requestMatchers("/api/**").hasRole(Role.USER.name())
 			.anyRequest().permitAll()); // 위의 경로 이외에는 모두 인증된 사용자만 접근 가능
 
