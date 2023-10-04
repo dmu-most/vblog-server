@@ -1,6 +1,7 @@
 package com.example.vblogserver.domain.bookmark.controller;
 
 import com.example.vblogserver.domain.board.entity.Board;
+import com.example.vblogserver.domain.board.repository.BoardRepository;
 import com.example.vblogserver.domain.board.service.BoardService;
 import com.example.vblogserver.domain.bookmark.dto.BookmarkDTO;
 import com.example.vblogserver.domain.bookmark.dto.BookmarkFolderDTO;
@@ -36,13 +37,15 @@ public class BookmarkController {
     private final BoardService boardService;
     private final UserRepository userRepository;
     private final BookmarkFolderRepository bookmarkFolderRepository;
+    private final BoardRepository boardRepository;
 
-    public BookmarkController(BookmarkRepository bookmarkRepository, JwtService jwtService, BoardService boardService, UserRepository userRepository, BookmarkFolderRepository bookmarkFolderRepository) {
+    public BookmarkController(BookmarkRepository bookmarkRepository, JwtService jwtService, BoardService boardService, UserRepository userRepository, BookmarkFolderRepository bookmarkFolderRepository, BoardRepository boardRepository) {
         this.bookmarkRepository = bookmarkRepository;
         this.jwtService = jwtService;
         this.boardService = boardService;
         this.userRepository = userRepository;
         this.bookmarkFolderRepository = bookmarkFolderRepository;
+        this.boardRepository = boardRepository;
     }
 
     // 찜 정보 insert
@@ -127,12 +130,11 @@ public class BookmarkController {
         }
 
 
-        BookmarkFolder newBookmarkFolder = new BookmarkFolder(folderName, user, new ArrayList<>());
+        BookmarkFolder newBookmarkFolder= new BookmarkFolder(folderName ,user,new ArrayList<>());
 
         bookmarkFolderRepository.save(newBookmarkFolder);
 
-        return ResponseEntity.ok().body(Map.of("result", true, "name", newBookmarkFolder.getName()));
-
+        return ResponseEntity.ok().body(Map.of("result", true,"name", newBookmarkFolder.getName()));
     }
 
     // 폴더 조회
@@ -194,4 +196,43 @@ public class BookmarkController {
 
         return ResponseEntity.ok().body(result);
     }
+
+    @GetMapping("/myinfo/folder/blog")
+    public ResponseEntity<List<BookmarkFolderDTO>> getBlogFolders(HttpServletRequest request) {
+        return getFoldersByCategory(request, "blog");
+    }
+
+    @GetMapping("/myinfo/folder/vlog")
+    public ResponseEntity<List<BookmarkFolderDTO>> getVlogFolders(HttpServletRequest request) {
+        return getFoldersByCategory(request, "vlog");
+    }
+
+    private ResponseEntity<List<BookmarkFolderDTO>> getFoldersByCategory(HttpServletRequest request, String category) {
+        String userId = jwtService.extractId(jwtService.extractAccessToken(request).get()).orElse(null); // 액세스 토큰에서 사용자 ID 추출
+
+        User user;
+        try {
+            user = userRepository.findByLoginId(userId).orElseThrow(() -> new IllegalArgumentException(userId + "을 찾을 수 없습니다"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.ok().body(
+                (List<BookmarkFolderDTO>)Map.of("result", false, "reason", userId+"을 찾을 수 없습니다"));
+        }
+
+        List<BookmarkFolder> folders = bookmarkFolderRepository.findByUser(user);
+
+        List<Board> boards = boardRepository.findByUserIdAndCategoryG_CategoryNameIgnoreCase(user.getId(), category);
+
+        List<Long> boardIds = boards.stream()
+            .map(Board::getId)
+            .collect(Collectors.toList());
+
+        List<BookmarkFolderDTO> folderDTOs = folders.stream()
+            .filter(folder -> folder.getBookmarks().stream()
+                .anyMatch(bookmark -> boardIds.contains(bookmark.getBoard().getId())))
+            .map(folder -> new BookmarkFolderDTO(folder))
+            .collect(Collectors.toList());
+
+        return ResponseEntity.ok(folderDTOs);
+    }
+
 }

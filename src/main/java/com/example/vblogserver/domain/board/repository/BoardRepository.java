@@ -28,4 +28,6 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     List<Board> findByCategoryGAndCategoryMOrderByCreatedDateDesc(CategoryG categoryG, CategoryM categoryM);
 
     List<Board> findByIdInAndCategoryG_CategoryNameIgnoreCase(List<Long> ids, String categoryName);
+
+    List<Board> findByUserIdAndCategoryG_CategoryNameIgnoreCase(Long userId, String categoryName);
 }
