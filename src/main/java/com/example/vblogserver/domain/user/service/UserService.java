@@ -87,4 +87,10 @@ public class UserService {
         return userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new Exception("존재하지 않는 유저입니다."));
     }
+
+    // 이름 수정 메서드
+    public void updateUsername(User user, String newUsername) {
+        user.setUsername(newUsername);
+        userRepository.save(user);
+    }
 }

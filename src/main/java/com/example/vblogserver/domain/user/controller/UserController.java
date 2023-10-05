@@ -1,5 +1,7 @@
 package com.example.vblogserver.domain.user.controller;
 
+import java.util.Map;
+
 import com.example.vblogserver.domain.user.entity.User;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -75,6 +77,32 @@ public class UserController {
                 .orElseThrow(() -> new Exception("액세스 토큰이 없습니다."));
 
         User user = userService.getUserByAccessToken(accessToken);
+
+        return ResponseEntity.ok(new UserInfoDto(user));
+    }
+
+    @GetMapping("/users/info/name")
+    public ResponseEntity<UserInfoDto> getUserName(HttpServletRequest request) throws Exception {
+        String accessToken = jwtService.extractAccessToken(request)
+            .orElseThrow(() -> new Exception("액세스 토큰이 없습니다."));
+
+        User user = userService.getUserByAccessToken(accessToken);
+
+        return ResponseEntity.ok(new UserInfoDto(user));
+    }
+
+    @PatchMapping("/users/info/name")
+    public ResponseEntity<UserInfoDto> updateUsername(HttpServletRequest request, @RequestBody Map<String, String> updateRequest) throws Exception {
+        String accessToken = jwtService.extractAccessToken(request)
+            .orElseThrow(() -> new Exception("액세스 토큰이 없습니다."));
+
+        User user = userService.getUserByAccessToken(accessToken);
+
+        // 클라이언트로부터 전달받은 새로운 이름으로 사용자의 이름 변경
+        String newUsername = updateRequest.get("username");
+        if (newUsername != null && !newUsername.isEmpty()) {
+            userService.updateUsername(user, newUsername);
+        }
 
         return ResponseEntity.ok(new UserInfoDto(user));
     }
