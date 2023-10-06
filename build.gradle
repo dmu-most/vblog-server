@@ -65,7 +65,6 @@ dependencies {
     implementation 'org.jsoup:jsoup:1.15.3'
 
     // AWS
-    implementation 'software.amazon.awssdk:s3'
     implementation 'commons-io:commons-io:2.8.0'
     implementation platform('com.amazonaws:aws-java-sdk-bom:1.11.1000')
     implementation 'com.amazonaws:aws-java-sdk-s3'
