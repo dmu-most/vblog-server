@@ -92,3 +92,16 @@ jwt:
   refresh:
     expiration: 1209600000 # 2주 (1000L(ms -> s) * 60L(s -> m) * 60L(m -> h) * 24L(h -> 하루) * 14(2주))
     header: Refresh
+
+# AWS S3
+cloud:
+  aws:
+    s3:
+      bucket:
+    stack:
+      auto: false
+    region:
+      static:
+    credentials:
+      accessKey:
+      secretKey:

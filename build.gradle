@@ -63,6 +63,19 @@ dependencies {
 
     // Naver 이미지 스크랩 관련
     implementation 'org.jsoup:jsoup:1.15.3'
+
+    // AWS
+    implementation 'software.amazon.awssdk:s3'
+    implementation 'commons-io:commons-io:2.8.0'
+    implementation platform('com.amazonaws:aws-java-sdk-bom:1.11.1000')
+    implementation 'com.amazonaws:aws-java-sdk-s3'
+
+    // Image Upload
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.477'
+    implementation 'commons-fileupload:commons-fileupload:1.4'
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
 }
 
 tasks.named('test') {

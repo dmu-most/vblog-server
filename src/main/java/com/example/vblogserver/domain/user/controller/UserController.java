@@ -81,7 +81,7 @@ public class UserController {
         return ResponseEntity.ok(new UserInfoDto(user));
     }
 
-    @GetMapping("/users/info/name")
+    @GetMapping("/myinfo/users/name")
     public ResponseEntity<UserInfoDto> getUserName(HttpServletRequest request) throws Exception {
         String accessToken = jwtService.extractAccessToken(request)
             .orElseThrow(() -> new Exception("액세스 토큰이 없습니다."));
@@ -91,7 +91,7 @@ public class UserController {
         return ResponseEntity.ok(new UserInfoDto(user));
     }
 
-    @PatchMapping("/users/info/name")
+    @PatchMapping("/myinfo/users/name")
     public ResponseEntity<UserInfoDto> updateUsername(HttpServletRequest request, @RequestBody Map<String, String> updateRequest) throws Exception {
         String accessToken = jwtService.extractAccessToken(request)
             .orElseThrow(() -> new Exception("액세스 토큰이 없습니다."));
