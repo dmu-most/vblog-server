@@ -13,8 +13,7 @@ public class ReviewDTO {
     private String content;
     //리뷰 작성 일자
     private String createdDate;
-    //작성자
-    private String userId;
+
     //평점
     private float grade;
     // 블로그인지 브이로그인지 구분
@@ -24,14 +23,6 @@ public class ReviewDTO {
 
     public void setGrade(float grade) {
         this.grade = grade;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
     }
 
     public Long getReviewId() {
