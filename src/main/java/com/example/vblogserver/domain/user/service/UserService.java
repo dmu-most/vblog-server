@@ -1,5 +1,7 @@
 package com.example.vblogserver.domain.user.service;
 
+import com.example.vblogserver.domain.user.util.InvalidTokenException;
+import com.example.vblogserver.domain.user.util.UserNotFoundException;
 import com.example.vblogserver.global.jwt.service.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -10,7 +12,6 @@ import com.example.vblogserver.domain.user.entity.Role;
 import com.example.vblogserver.domain.user.entity.User;
 import com.example.vblogserver.domain.user.repository.UserRepository;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -80,12 +81,12 @@ public class UserService {
         userRepository.delete(user);
     }
 
-    public User getUserByAccessToken(String accessToken) throws Exception {
+    public User getUserByAccessToken(String accessToken) throws InvalidTokenException, UserNotFoundException {
         String loginId = jwtService.extractId(accessToken)
-                .orElseThrow(() -> new Exception("유효하지 않은 액세스 토큰입니다."));
+            .orElseThrow(() -> new InvalidTokenException("유효하지 않은 액세스 토큰입니다."));
 
         return userRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new Exception("존재하지 않는 유저입니다."));
+            .orElseThrow(() -> new UserNotFoundException("존재하지 않는 유저입니다."));
     }
 
     // 이름 수정 메서드

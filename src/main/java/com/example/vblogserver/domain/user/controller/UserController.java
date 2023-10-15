@@ -14,6 +14,7 @@ import com.example.vblogserver.domain.user.dto.UserSignUpDto;
 import com.example.vblogserver.domain.user.dto.UserInfoDto;
 import com.example.vblogserver.domain.user.repository.UserRepository;
 import com.example.vblogserver.domain.user.service.UserService;
+import com.example.vblogserver.domain.user.util.InvalidTokenException;
 import com.example.vblogserver.global.jwt.service.JwtService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -72,14 +73,20 @@ public class UserController {
     }
 
     @GetMapping("/users/info")
-    public ResponseEntity<UserInfoDto> getUserInfo(HttpServletRequest request) throws Exception {
+    public ResponseEntity<UserInfoDto> getUserInfo(HttpServletRequest request) throws InvalidTokenException {
         String accessToken = jwtService.extractAccessToken(request)
-                .orElseThrow(() -> new Exception("액세스 토큰이 없습니다."));
+            .orElseThrow(() -> new InvalidTokenException("액세스 토큰이 없습니다."));
 
-        User user = userService.getUserByAccessToken(accessToken);
+        User user;
+        try {
+            user = userService.getUserByAccessToken(accessToken);
+        } catch (Exception e) {
+            throw new InvalidTokenException("유효하지 않은 액세스 토큰입니다.", e);
+        }
 
         return ResponseEntity.ok(new UserInfoDto(user));
     }
+
 
     @GetMapping("/myinfo/users/name")
     public ResponseEntity<UserInfoDto> getUserName(HttpServletRequest request) throws Exception {
