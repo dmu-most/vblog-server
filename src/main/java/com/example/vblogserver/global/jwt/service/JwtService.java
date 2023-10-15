@@ -9,9 +9,11 @@ import org.springframework.stereotype.Service;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.example.vblogserver.domain.user.repository.UserRepository;
+import com.example.vblogserver.global.jwt.util.InvalidTokenException;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
@@ -172,12 +174,14 @@ public class JwtService {
 
 	public boolean isTokenValid(String token) {
 		try {
+			// JWT 파싱 및 검증 로직 수행
 			JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);
-			return true;
-		} catch (Exception e) {
-			log.error("유효하지 않은 토큰입니다. {}", e.getMessage());
-			return false;
+		} catch (JwtException e) {
+			throw new InvalidTokenException("유효하지 않은 토큰입니다.", e);
 		}
+
+		// 만약 try-catch 블록을 통과하면, 토큰이 유효한 것으로 간주됨.
+		return true;
 	}
 
 	/**

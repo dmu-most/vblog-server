@@ -13,17 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.vblogserver.domain.user.dto.ResponseDto;
 import com.example.vblogserver.global.jwt.service.JwtService;
+import com.example.vblogserver.global.jwt.util.InvalidTokenException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-
-// 커스텀 예외 클래스
-class InvalidTokenException extends RuntimeException {
-	public InvalidTokenException(String message) {
-		super(message);
-	}
-}
 
 @RestController
 @RequestMapping("/token")
@@ -52,7 +46,7 @@ public class TokenController {
 			if (jwtService.isTokenExpired(accessToken)) { // 액세스 토큰이 만료된 경우
 
 				String loginId = jwtService.extractId(refreshToken)
-					.orElseThrow(() -> new InvalidTokenException("만료된 리프레시 토큰입니다."));
+					.orElseThrow(() -> new InvalidTokenException("만료된 액세스 토큰입니다."));
 
 				String newAccessToken = jwtService.createAccessToken(loginId);
 				jwtService.sendAccessToken(response, newAccessToken);
@@ -60,7 +54,7 @@ public class TokenController {
 				return ResponseEntity.ok().headers(responseHeaders).body(
 					new ResponseDto(true, "새로운 액세스 토큰이 발급되었습니다.")
 				);
-			} else { // 아직 유효한 액세스 독브르
+			} else { // 아직 유효한 액세스 토큰
 
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).headers(responseHeaders).body(
 					new ResponseDto(false, "액세스 토큰이 아직 유효합니다.")
@@ -73,7 +67,7 @@ public class TokenController {
 		}
 	}
 
-	@PostMapping("/reissu/refresh")
+	@PostMapping("/reissue/refresh")
 	public ResponseEntity<ResponseDto> refreshRefreshToken(HttpServletRequest request,
 		HttpServletResponse response) {
 
@@ -92,20 +86,6 @@ public class TokenController {
 
 		return ResponseEntity.ok().headers(responseHeaders).body(
 			new ResponseDto(true, "새로운 리프레시 토큰이 발급되었습니다.")
-		);
-	}
-}
-
-@ControllerAdvice
-class GlobalExceptionHandler {
-
-	@ExceptionHandler(InvalidTokenException.class)
-	public ResponseEntity<ResponseDto> handleInvalidJwt(InvalidTokenException e) {
-		HttpHeaders responseHeaders = new HttpHeaders();
-		responseHeaders.set("Content-Type", "application/json;charset=UTF-8");
-
-		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).headers(responseHeaders).body(
-			new ResponseDto(false, e.getMessage())
 		);
 	}
 }
