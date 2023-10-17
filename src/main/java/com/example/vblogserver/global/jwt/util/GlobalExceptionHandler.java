@@ -1,5 +1,6 @@
 package com.example.vblogserver.global.jwt.util;
 
+import com.example.vblogserver.domain.user.util.UserNotFoundException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,5 +20,10 @@ class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).headers(responseHeaders).body(
 			new ResponseDto(false, e.getMessage())
 		);
+	}
+
+	@ExceptionHandler(UserNotFoundException.class)
+	public ResponseEntity<String> handleUserNotFoundException(UserNotFoundException e) {
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
 	}
 }

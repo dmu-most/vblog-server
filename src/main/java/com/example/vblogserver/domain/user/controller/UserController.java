@@ -3,6 +3,7 @@ package com.example.vblogserver.domain.user.controller;
 import java.util.Map;
 
 import com.example.vblogserver.domain.user.entity.User;
+import com.example.vblogserver.global.jwt.util.InvalidTokenException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +15,6 @@ import com.example.vblogserver.domain.user.dto.UserSignUpDto;
 import com.example.vblogserver.domain.user.dto.UserInfoDto;
 import com.example.vblogserver.domain.user.repository.UserRepository;
 import com.example.vblogserver.domain.user.service.UserService;
-import com.example.vblogserver.domain.user.util.InvalidTokenException;
 import com.example.vblogserver.global.jwt.service.JwtService;
 
 import jakarta.servlet.http.HttpServletRequest;
