@@ -32,9 +32,6 @@ public class TokenController {
 		Optional<String> accessTokenOpt = jwtService.extractAccessToken(request);
 		Optional<String> refreshTokenOpt = jwtService.extractRefreshToken(request);
 
-		HttpHeaders responseHeaders = new HttpHeaders();
-		responseHeaders.set("Content-Type", "application/json;charset=UTF-8");
-
 		if (accessTokenOpt.isPresent() && refreshTokenOpt.isPresent()) { // 두 종류의 토큰이 모두 제공된 경우
 			String accessToken = accessTokenOpt.get();
 			String refreshToken = refreshTokenOpt.get();
@@ -49,19 +46,20 @@ public class TokenController {
 					.orElseThrow(() -> new InvalidTokenException("만료된 액세스 토큰입니다."));
 
 				String newAccessToken = jwtService.createAccessToken(loginId);
+
 				jwtService.sendAccessToken(response, newAccessToken);
 
-				return ResponseEntity.ok().headers(responseHeaders).body(
-					new ResponseDto(true, "새로운 액세스 토큰이 발급되었습니다.")
+				return ResponseEntity.ok().body(
+						new ResponseDto(true, "새로운 액세스 토큰이 발급되었습니다.")
 				);
 			} else { // 아직 유효한 액세스 토큰
 
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).headers(responseHeaders).body(
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
 					new ResponseDto(false, "액세스 토큰이 아직 유효합니다.")
 				);
 			}
 		} else {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).headers(responseHeaders).body(
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
 				new ResponseDto(false, "액세스 토큰 또는 리프레시 토큰이 헤더에 제공되지 않았습니다.")
 			);
 		}

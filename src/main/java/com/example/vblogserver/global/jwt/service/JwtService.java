@@ -164,8 +164,6 @@ public class JwtService {
 		response.setHeader(refreshHeader, refreshToken);
 	}
 
-
-
 	public boolean isTokenValid(String token) {
 		System.out.println("Token to validate: " + token);  // log the incoming token
 

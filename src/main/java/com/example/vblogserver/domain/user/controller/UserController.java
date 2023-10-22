@@ -4,6 +4,9 @@ import java.util.Map;
 
 import com.example.vblogserver.domain.user.entity.User;
 import com.example.vblogserver.global.jwt.util.InvalidTokenException;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -73,18 +76,21 @@ public class UserController {
     }
 
     @GetMapping("/users/info")
-    public ResponseEntity<UserInfoDto> getUserInfo(HttpServletRequest request) throws InvalidTokenException {
+    public ResponseEntity<?> getUserInfo(HttpServletRequest request, HttpServletResponse response) {
         String accessToken = jwtService.extractAccessToken(request)
-            .orElseThrow(() -> new InvalidTokenException("액세스 토큰이 없습니다."));
+                .orElseThrow(() -> new InvalidTokenException("액세스 토큰이 없습니다."));
 
         User user;
         try {
             user = userService.getUserByAccessToken(accessToken);
-        } catch (Exception e) {
+            return ResponseEntity.ok(new UserInfoDto(user));
+        } catch (ExpiredJwtException e) { // If the access token is expired
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    new ResponseDto(false, "만료된 액세스 토큰입니다.")
+            );
+        } catch (JwtException e) {
             throw new InvalidTokenException("유효하지 않은 액세스 토큰입니다.", e);
         }
-
-        return ResponseEntity.ok(new UserInfoDto(user));
     }
 
 
