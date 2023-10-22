@@ -5,14 +5,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.example.vblogserver.domain.user.dto.PageResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.vblogserver.domain.board.dto.BoardDTO;
 import com.example.vblogserver.domain.board.entity.Board;
@@ -36,58 +34,67 @@ public class RecentlyContoller {
 	private final ClickRepository clickRepository;
 	private final BoardRepository boardRepository;
 
-	// 최근 기록 (페이징 처리 : 10개)
-	// TODO: 모두 보기(최대 10개)
 	@GetMapping("/blog")
-	public ResponseEntity<List<BoardDTO>> getRecentlyViewedBlogBoards(HttpServletRequest request) {
-		return getRecentlyViewedBoardsByCategory(request,"blog");
+	public ResponseEntity<PageResponseDto<BoardDTO>> getRecentlyViewedBlogBoards(
+			HttpServletRequest request,
+			@RequestParam(defaultValue = "0") int page) {
+		return getRecentlyViewedBoardsByCategory(request,"blog", page);
 	}
 
 	@GetMapping("/vlog")
-	public ResponseEntity<List<BoardDTO>> getRecentlyViewedVlogBoards(HttpServletRequest request) {
-		return getRecentlyViewedBoardsByCategory(request,"vlog");
+	public ResponseEntity<PageResponseDto<BoardDTO>> getRecentlyViewedVlogBoards(
+			HttpServletRequest request,
+			@RequestParam(defaultValue = "0") int page) {
+		return getRecentlyViewedBoardsByCategory(request,"vlog", page);
 	}
 
-	private ResponseEntity<List<BoardDTO>> getRecentlyViewedBoardsByCategory(HttpServletRequest request, String category) {
-		// 액세스 토큰 추출
+	private ResponseEntity<PageResponseDto<BoardDTO>> getRecentlyViewedBoardsByCategory(
+			HttpServletRequest request,
+			String category,
+			int page) {
+
 		Optional<String> accessTokenOpt = jwtService.extractAccessToken(request);
 
-		// 액세스 토큰이 존재하지 않거나 유효하지 않다면 에러 응답 반환
 		if (accessTokenOpt.isEmpty() || !jwtService.isTokenValid(accessTokenOpt.get())) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
 		}
 
-		// 액세스 토큰에서 로그인 아이디 추출
 		Optional<String> loginIdOpt = jwtService.extractId(accessTokenOpt.get());
 
-		// 로그인 아이디가 존재하지 않으면 에러 응답 반환
+
 		if (loginIdOpt.isEmpty()) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
 		}
 
 		User user = userRepository.findByLoginId(loginIdOpt.get()).orElseThrow(() -> new RuntimeException("User not found"));
 
-		Page<Click> clicks = clickRepository.findByUser(user, PageRequest.of(0, 40));
+		PageRequest pageRequest = PageRequest.of(page, 5); // 페이지당 사이즈 : 5개
+		Page<Click> clicks = clickRepository.findByUser(user, pageRequest);
 
 		List<Long> boardIds = clicks.getContent().stream()
-			.map(click -> click.getBoard().getId())
-			.collect(Collectors.toList());
+				.map(click -> click.getBoard().getId())
+				.collect(Collectors.toList());
 
 		List<Board> boards = boardRepository.findByIdInAndCategoryG_CategoryNameIgnoreCase(boardIds, category);
 
 		if (boards.isEmpty()) {
-			return ResponseEntity.ok(new ArrayList<>());
+			return ResponseEntity.ok(new PageResponseDto<>(new ArrayList<>(), page, 5, 0));
 		}
 
 		List<BoardDTO> boardDTOs = boards.stream()
-			.map(this::convertToDto)
-			.collect(Collectors.toList());
+				.map(this::convertToDto)
+				.collect(Collectors.toList());
 
-		return ResponseEntity.ok(boardDTOs);
+		PageResponseDto<BoardDTO> response = new PageResponseDto<>();
+		response.setContent(boardDTOs);
+		response.setPageNumber(clicks.getNumber());
+		response.setPageSize(clicks.getSize());
+		response.setTotalElements(clicks.getTotalElements());
+
+		return ResponseEntity.ok(response);
 	}
 
-
-	private BoardDTO convertToDto(Board board){
+		private BoardDTO convertToDto(Board board){
 		return new BoardDTO(board);
 	}
 }

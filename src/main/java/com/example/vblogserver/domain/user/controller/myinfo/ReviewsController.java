@@ -36,7 +36,6 @@ public class ReviewsController {
 	private final UserRepository userRepository;
 	private final ReviewRepository reviewRepository;
 
-	// 리뷰 조회 (페이징 처리 : 10개)
 	// TODO: 최신순, 인기순
 	@GetMapping("/blog")
 	public ResponseEntity<Page<ReviewDTO>> getUserBlogReviews(HttpServletRequest request,
