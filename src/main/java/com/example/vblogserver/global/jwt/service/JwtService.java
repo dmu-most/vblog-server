@@ -3,17 +3,13 @@ package com.example.vblogserver.global.jwt.service;
 import java.util.Date;
 import java.util.Optional;
 
+import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
 import com.example.vblogserver.domain.user.repository.UserRepository;
 import com.example.vblogserver.global.jwt.util.InvalidTokenException;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
@@ -58,11 +54,13 @@ public class JwtService {
 	 */
 	public String createAccessToken(String loginId) {
 		Date now = new Date();
-		return JWT.create() // JWT 토큰을 생성하는 빌더 반환
-			.withSubject(ACCESS_TOKEN_SUBJECT) // JWT의 Subject 지정 -> AccessToken이므로 AccessToken
-			.withExpiresAt(new Date(now.getTime() + accessTokenExpirationPeriod)) // 토큰 만료 시간 설정
-			.withClaim(ID_CLAIM, loginId)
-			.sign(Algorithm.HMAC512(secretKey)); // HMAC512 알고리즘 사용, application-jwt.yml에서 지정한 secret 키로 암호화
+		String compact = Jwts.builder() // JWT 토큰을 생성하는 빌더 반환
+				.setSubject(ACCESS_TOKEN_SUBJECT)
+				.setExpiration(new Date(now.getTime() + accessTokenExpirationPeriod))
+				.claim(ID_CLAIM, loginId)
+				.signWith(SignatureAlgorithm.HS512, secretKey.getBytes())
+				.compact();
+		return compact;
 	}
 
 	/**
@@ -71,11 +69,12 @@ public class JwtService {
 	 */
 	public String createRefreshToken(String loginId) {
 		Date now = new Date();
-		return JWT.create()
-			.withSubject(REFRESH_TOKEN_SUBJECT)
-			.withExpiresAt(new Date(now.getTime() + refreshTokenExpirationPeriod))
-			.withClaim(ID_CLAIM, loginId)
-			.sign(Algorithm.HMAC512(secretKey));
+		return Jwts.builder()
+				.setSubject(REFRESH_TOKEN_SUBJECT)
+				.setExpiration(new Date(now.getTime() + refreshTokenExpirationPeriod))
+				.claim(ID_CLAIM, loginId)
+				.signWith(SignatureAlgorithm.HS512, secretKey.getBytes())
+				.compact();
 	}
 
 	/**
@@ -133,16 +132,22 @@ public class JwtService {
 	 */
 	public Optional<String> extractId(String accessToken) {
 		try {
-			// 토큰 유효성 검사하는 데에 사용할 알고리즘이 있는 JWT verifier builder 반환
-			return Optional.ofNullable(JWT.require(Algorithm.HMAC512(secretKey))
-				.build() // 반환된 빌더로 JWT verifier 생성
-				.verify(accessToken) // accessToken을 검증하고 유효하지 않다면 예외 발생
-				.getClaim(ID_CLAIM) // claim(id) 가져오기
-				.asString());
-		} catch (Exception e) {
-			log.error("액세스 토큰이 유효하지 않습니다.");
-			return Optional.empty();
+			Claims claims = Jwts.parserBuilder()
+					.setSigningKey(secretKey.getBytes())
+					.build()
+					.parseClaimsJws(accessToken)
+					.getBody();
+
+			return Optional.ofNullable(claims.get(ID_CLAIM).toString());
+		} catch (ExpiredJwtException e) {
+			log.error("액세스 토큰이 만료되었습니다.", e);
+		} catch (SignatureException e) {
+			log.error("액세스 토큰의 서명 검증에 실패했습니다.", e);
+		} catch (JwtException e) {
+			log.error("액세스 토큰이 유효하지 않습니다.", e);
 		}
+
+		return Optional.empty();
 	}
 
 	/**
@@ -159,24 +164,18 @@ public class JwtService {
 		response.setHeader(refreshHeader, refreshToken);
 	}
 
-	/**
-	 * RefreshToken DB 저장(업데이트)
-	 */
-	public void updateRefreshToken(String id, String refreshToken) {
-		/*
-		userRepository.findByLoginId(id)
-			.ifPresentOrElse(
-				user -> user.updateRefreshToken(refreshToken),
-				() -> new Exception("일치하는 회원이 없습니다.")
-			);
-		 */
-	}
+
 
 	public boolean isTokenValid(String token) {
+		System.out.println("Token to validate: " + token);  // log the incoming token
+
 		try {
 			// JWT 파싱 및 검증 로직 수행
-			JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);
-		} catch (JwtException e) {
+			Jws<Claims> claims = Jwts.parserBuilder()
+					.setSigningKey(secretKey.getBytes())
+					.build()
+					.parseClaimsJws(token);
+		} catch (Exception e) {
 			throw new InvalidTokenException("유효하지 않은 토큰입니다.", e);
 		}
 
@@ -186,16 +185,27 @@ public class JwtService {
 
 	/**
 	 * 요청시 액세스 토큰의 만료 여부를 체크하고 만료되었을 경우에만 재발급
-	 * @param token
-	 * @return
 	 */
 	public boolean isTokenExpired(String token) {
-		Claims claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
-		Date expiration = claims.getExpiration();
-		return expiration.before(new Date());
-	}
+		System.out.println("Token to validate: " + token);  // log the incoming token
+		try {
+			Jws<Claims> claims = Jwts.parserBuilder()
+					.setSigningKey(secretKey.getBytes())
+					.build()
+					.parseClaimsJws(token);
 
-	public void sendRefreshToken(HttpServletResponse response, String refreshToken) {
-		response.setHeader("Refresh", refreshToken);
+			Date expiration = claims.getBody().getExpiration();
+			Date now = new Date();
+
+			if (expiration.before(now)) {  // If the expiration date is before current time
+				return true;  // The token is expired
+			}
+
+		} catch (Exception e) {
+			throw new InvalidTokenException("유효하지 않은 토큰입니다.", e);
+		}
+
+		// 만약 try-catch 블록을 통과하면, 토큰이 유효한 것으로 간주됨.
+		return false;
 	}
 }
