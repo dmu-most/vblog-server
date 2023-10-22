@@ -1,10 +1,12 @@
 package com.example.vblogserver.domain.board.repository;
 
 import com.example.vblogserver.domain.board.entity.Board;
+import com.example.vblogserver.domain.bookmark.entity.Folder;
 import com.example.vblogserver.domain.category.entity.CategoryG;
 import com.example.vblogserver.domain.category.entity.CategoryM;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -29,7 +31,7 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 
     List<Board> findByIdInAndCategoryG_CategoryNameIgnoreCase(List<Long> ids, String categoryName);
 
-    List<Board> findByUserIdAndCategoryG_CategoryNameIgnoreCase(Long userId, String categoryName);
-
     List<Board> findByHashtagContainingOrDescriptionContainingOrTitleContaining(String hashtag, String description, String title);
+
+    Page<Board> findByFolderAndCategoryG_CategoryNameIgnoreCase(Folder folder, String type, PageRequest pageRequest);
 }

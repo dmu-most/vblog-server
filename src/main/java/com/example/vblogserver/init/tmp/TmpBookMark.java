@@ -3,9 +3,9 @@ package com.example.vblogserver.init.tmp;
 import com.example.vblogserver.domain.board.entity.Board;
 import com.example.vblogserver.domain.board.service.BoardService;
 import com.example.vblogserver.domain.bookmark.entity.Bookmark;
-import com.example.vblogserver.domain.bookmark.entity.BookmarkFolder;
-import com.example.vblogserver.domain.bookmark.repository.BookmarkFolderRepository;
+import com.example.vblogserver.domain.bookmark.entity.Folder;
 import com.example.vblogserver.domain.bookmark.repository.BookmarkRepository;
+import com.example.vblogserver.domain.bookmark.repository.FolderRepository;
 import com.example.vblogserver.domain.user.entity.User;
 import com.example.vblogserver.domain.user.repository.UserRepository;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,13 +18,13 @@ public class TmpBookMark {
     private final BoardService boardService;
     private final UserRepository userRepository;
     private final BookmarkRepository bookmarkRepository;
-    private final BookmarkFolderRepository bookmarkFolderRepository;
+    private final FolderRepository folderRepository;
 
-    public TmpBookMark(BoardService boardService, UserRepository userRepository, BookmarkRepository bookmarkRepository, BookmarkFolderRepository bookmarkFolderRepository) {
+    public TmpBookMark(BoardService boardService, UserRepository userRepository, BookmarkRepository bookmarkRepository, FolderRepository folderRepository) {
         this.boardService = boardService;
         this.userRepository = userRepository;
         this.bookmarkRepository = bookmarkRepository;
-        this.bookmarkFolderRepository = bookmarkFolderRepository;
+        this.folderRepository = folderRepository;
     }
 
     //테스트 계정에 찜 항목 추가
@@ -48,21 +48,21 @@ public class TmpBookMark {
                 return ;
             }
             String folderName = "재밌는 영상";
-            BookmarkFolder bookmarkFolder = new BookmarkFolder(folderName, user, new ArrayList<>());
+            Folder folder = new Folder();
 
-            List<BookmarkFolder> existingFolders = bookmarkFolderRepository.findByNameAndUser(folderName, user);
+            List<Folder> existingFolders = folderRepository.findByNameAndUser(folderName, user);
 
             if (!existingFolders.isEmpty()) {
                 // 폴더가 이미 존재하면, 첫 번째 폴더를 사용합니다.
-                bookmarkFolder = existingFolders.get(0);
+                folder = existingFolders.get(0);
             } else {
                 // 폴더가 존재하지 않으면 새로 만들고 저장합니다.
-                bookmarkFolder = bookmarkFolderRepository.save(bookmarkFolder);
+                folder = folderRepository.save(folder);
             }
             Bookmark saveBookmark = Bookmark.builder()
                     .board(board)
                     .user(user)
-                    .bookmarkFolder(bookmarkFolder)
+                    .folder(folder)
                     .build();
             bookmarkRepository.save(saveBookmark);
 

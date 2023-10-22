@@ -1,5 +1,6 @@
 package com.example.vblogserver.domain.board.entity;
 
+import com.example.vblogserver.domain.bookmark.entity.Folder;
 import com.example.vblogserver.domain.category.entity.CategoryG;
 import com.example.vblogserver.domain.category.entity.CategoryM;
 import com.example.vblogserver.domain.category.entity.CategoryS;
@@ -30,7 +31,6 @@ public class Board {
 
     //작성자
     private String writer;
-
 
     @ManyToOne
     @JoinColumn(name = "USER_ID")
@@ -79,6 +79,10 @@ public class Board {
     @ManyToOne
     @JoinColumn(name = "category_s")
     private CategoryS categoryS;
+
+    @ManyToOne
+    @JoinColumn(name = "FOLDER_ID")
+    private Folder folder;
 
 
     @Builder
@@ -152,6 +156,8 @@ public class Board {
     public String getHashtag() {
         return hashtag;
     }
+
+    public void setFolder(Folder folder) { this.folder = folder; }
 
 
 }

@@ -4,14 +4,14 @@ import com.example.vblogserver.domain.board.entity.Board;
 import com.example.vblogserver.domain.board.repository.BoardRepository;
 import com.example.vblogserver.domain.board.service.BoardService;
 import com.example.vblogserver.domain.bookmark.dto.BookmarkDTO;
-import com.example.vblogserver.domain.bookmark.dto.BookmarkFolderDTO;
 import com.example.vblogserver.domain.bookmark.entity.Bookmark;
-import com.example.vblogserver.domain.bookmark.entity.BookmarkFolder;
-import com.example.vblogserver.domain.bookmark.repository.BookmarkFolderRepository;
+import com.example.vblogserver.domain.bookmark.entity.Folder;
 import com.example.vblogserver.domain.bookmark.repository.BookmarkRepository;
+import com.example.vblogserver.domain.bookmark.repository.FolderRepository;
 import com.example.vblogserver.domain.user.entity.User;
 import com.example.vblogserver.domain.user.repository.UserRepository;
 import com.example.vblogserver.global.jwt.service.JwtService;
+import com.example.vblogserver.global.jwt.util.NotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -36,23 +36,33 @@ public class BookmarkController {
     private final JwtService jwtService;
     private final BoardService boardService;
     private final UserRepository userRepository;
-    private final BookmarkFolderRepository bookmarkFolderRepository;
+    private final FolderRepository folderRepository;
     private final BoardRepository boardRepository;
 
-    public BookmarkController(BookmarkRepository bookmarkRepository, JwtService jwtService, BoardService boardService, UserRepository userRepository, BookmarkFolderRepository bookmarkFolderRepository, BoardRepository boardRepository) {
+    public BookmarkController(BookmarkRepository bookmarkRepository, JwtService jwtService, BoardService boardService, UserRepository userRepository, FolderRepository folderRepository, BoardRepository boardRepository) {
         this.bookmarkRepository = bookmarkRepository;
         this.jwtService = jwtService;
         this.boardService = boardService;
         this.userRepository = userRepository;
-        this.bookmarkFolderRepository = bookmarkFolderRepository;
+        this.folderRepository = folderRepository;
         this.boardRepository = boardRepository;
     }
 
-    // 찜 정보 insert
+    // 스크랩 정보 insert
     @PostMapping("/bookmark/{contentId}/{folderId}")
     public ResponseEntity<Map<String, Object>> clickOnBookMark(HttpServletRequest request,
         @PathVariable Long contentId,
         @PathVariable Long folderId) {
+        Board board = boardRepository.findById(contentId)
+                .orElseThrow(() -> new NotFoundException("Board not found"));
+
+        Folder folder = folderRepository.findById(folderId)
+                .orElseThrow(() -> new NotFoundException("Folder not found"));
+
+        board.setFolder(folder);
+
+        boardRepository.save(board);
+
         return ClickBookMark(request, contentId, folderId);
     }
 
@@ -79,20 +89,20 @@ public class BookmarkController {
                 return ResponseEntity.ok().body(Map.of("result", false, "reason", userId+"을 찾을 수 없습니다"));
             }
 
-            Optional<BookmarkFolder> optBookmarkFolder = bookmarkFolderRepository.findById(folderId);
+            Optional<Folder> optFolder = folderRepository.findById(folderId);
 
-            if (!optBookmarkFolder.isPresent()) {
+            if (!optFolder.isPresent()) {
                 return ResponseEntity.ok().body(Map.of("result", false,"reason", "폴더가 존재하지 않습니다."));
             }
 
-            if (!optBookmarkFolder.get().getUser().getId().equals(user.getId())) {
+            if (!optFolder.get().getUser().getId().equals(user.getId())) {
                 return ResponseEntity.ok().body(Map.of("result", false,"reason", "폴더에 접근 권한이 없습니다."));
             }
 
             Bookmark newBookmark = Bookmark.builder()
                 .board(board)
                 .user(user)
-                .bookmarkFolder(optBookmarkFolder.get())
+                .folder(optFolder.get())
                 .build();
 
                 Bookmark saveBookMark = bookmarkRepository.save(newBookmark);
@@ -109,130 +119,5 @@ public class BookmarkController {
 
     }
 
-    // 폴더 생성
-    @PostMapping("/folder")
-    public ResponseEntity<Map<String, Object>> createBookmarkFolder(HttpServletRequest request, @RequestBody Map<String, String> folderInfo) {
-        String userId = jwtService.extractId(jwtService.extractAccessToken(request).get()).orElse(null); // 액세스 토큰에서 사용자 ID 추출
-
-        User user;
-        try {
-            user = userRepository.findByLoginId(userId).orElseThrow(() -> new IllegalArgumentException(userId + "을 찾을 수 없습니다"));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.ok().body(Map.of("result", false, "reason", userId+"을 찾을 수 없습니다"));
-        }
-
-        String folderName = folderInfo.get("name");
-
-        // 이미 동일한 이름의 폴더가 있는지 확인
-        List<BookmarkFolder> existingFolders = bookmarkFolderRepository.findByNameAndUser(folderName, user);
-        if (!existingFolders.isEmpty()) {
-            return ResponseEntity.ok().body(Map.of("result", false,"reason", "동일한 이름의 폴더가 이미 존재합니다."));
-        }
-
-
-        BookmarkFolder newBookmarkFolder= new BookmarkFolder(folderName ,user,new ArrayList<>());
-
-        bookmarkFolderRepository.save(newBookmarkFolder);
-
-        return ResponseEntity.ok().body(Map.of("result", true,"name", newBookmarkFolder.getName()));
-    }
-
-    // 폴더 조회
-    @GetMapping("/myinfo/bookmark")
-    public ResponseEntity<Map<String, Object>> getUserFolders(HttpServletRequest request) {
-        String userId = jwtService.extractId(jwtService.extractAccessToken(request).get()).orElse(null); // 액세스 토큰에서 사용자 ID 추출
-
-        User user;
-        try {
-            user = userRepository.findByLoginId(userId).orElseThrow(() -> new IllegalArgumentException(userId + "을 찾을 수 없습니다"));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.ok().body(Map.of("result", false, "reason", userId+"을 찾을 수 없습니다"));
-        }
-
-        List<BookmarkFolder> userFolders = bookmarkFolderRepository.findByUser(user);
-
-        List<BookmarkFolderDTO> dtoList = userFolders.stream()
-            .map(folder -> new BookmarkFolderDTO(folder.getId(), folder.getName()))
-            .collect(Collectors.toList());
-
-        Map<String, Object> result = new HashMap<>();
-        result.put("result", true);
-        result.put("folders", dtoList);
-
-        return ResponseEntity.ok().body(result);
-    }
-
-    // 폴더 속 찜한 게시글 조회
-    @GetMapping("/myinfo/bookmark/{folderId}")
-    public ResponseEntity<Map<String, Object>> getBookmarksInFolder(HttpServletRequest request, @PathVariable Long folderId) {
-        String userId = jwtService.extractId(jwtService.extractAccessToken(request).get()).orElse(null); // 액세스 토큰에서 사용자 ID 추출
-
-        User user;
-        try {
-            user = userRepository.findByLoginId(userId).orElseThrow(() -> new IllegalArgumentException(userId + "을 찾을 수 없습니다"));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.ok().body(Map.of("result", false, "reason", userId+"을 찾을 수 없습니다"));
-        }
-
-        Optional<BookmarkFolder> optBookmarkFolder = bookmarkFolderRepository.findById(folderId);
-
-        if (!optBookmarkFolder.isPresent()) {
-            return ResponseEntity.ok().body(Map.of("result", false,"reason", "폴더가 존재하지 않습니다."));
-        }
-
-        if (!optBookmarkFolder.get().getUser().getId().equals(user.getId())) {
-            return ResponseEntity.ok().body(Map.of("result", false,"reason", "폴더에 접근 권한이 없습니다."));
-        }
-
-        List<Bookmark> bookmarksInFolder = optBookmarkFolder.get().getBookmarks();
-
-        List<BookmarkDTO> dtoList = bookmarksInFolder.stream()
-            .map(bookmark -> new BookmarkDTO(bookmark.getId(), bookmark.getBoard().getId()))
-            .collect(Collectors.toList());
-
-        Map<String, Object> result = new HashMap<>();
-        result.put("result", true);
-        result.put("bookmarks", dtoList);
-
-        return ResponseEntity.ok().body(result);
-    }
-
-    @GetMapping("/myinfo/folder/blog")
-    public ResponseEntity<List<BookmarkFolderDTO>> getBlogFolders(HttpServletRequest request) {
-        return getFoldersByCategory(request, "blog");
-    }
-
-    @GetMapping("/myinfo/folder/vlog")
-    public ResponseEntity<List<BookmarkFolderDTO>> getVlogFolders(HttpServletRequest request) {
-        return getFoldersByCategory(request, "vlog");
-    }
-
-    private ResponseEntity<List<BookmarkFolderDTO>> getFoldersByCategory(HttpServletRequest request, String category) {
-        String userId = jwtService.extractId(jwtService.extractAccessToken(request).get()).orElse(null); // 액세스 토큰에서 사용자 ID 추출
-
-        User user;
-        try {
-            user = userRepository.findByLoginId(userId).orElseThrow(() -> new IllegalArgumentException(userId + "을 찾을 수 없습니다"));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.ok().body(
-                (List<BookmarkFolderDTO>)Map.of("result", false, "reason", userId+"을 찾을 수 없습니다"));
-        }
-
-        List<BookmarkFolder> folders = bookmarkFolderRepository.findByUser(user);
-
-        List<Board> boards = boardRepository.findByUserIdAndCategoryG_CategoryNameIgnoreCase(user.getId(), category);
-
-        List<Long> boardIds = boards.stream()
-            .map(Board::getId)
-            .collect(Collectors.toList());
-
-        List<BookmarkFolderDTO> folderDTOs = folders.stream()
-            .filter(folder -> folder.getBookmarks().stream()
-                .anyMatch(bookmark -> boardIds.contains(bookmark.getBoard().getId())))
-            .map(folder -> new BookmarkFolderDTO(folder))
-            .collect(Collectors.toList());
-
-        return ResponseEntity.ok(folderDTOs);
-    }
 
 }

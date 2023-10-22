@@ -15,35 +15,32 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Bookmark {
-    //찜 ID
+    //스크랩 ID
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", updatable = false)
     private Long id;
 
-    // 게시글 ID - 수정
+    // 게시글 ID
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="board_id")
     private Board board;
 
-    //찜한 유저
+    //스크랩한 유저
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_ID")
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "folderId")
-    private BookmarkFolder bookmarkFolder;
+    @JoinColumn(name = "FOLDER_ID")
+    private Folder folder;
 
     @Builder
-    public Bookmark(Board board, User user, BookmarkFolder bookmarkFolder) {
+    public Bookmark(Board board, User user, Folder folder) {
         //this.bookmark = bookmark;
         this.board = board;
         this.user = user;
-        this.bookmarkFolder = bookmarkFolder;
+        this.folder = folder;
     }
 
-    public void setBookmarkFolder(BookmarkFolder bookmarkFolder) {
-        this.bookmarkFolder = bookmarkFolder;
-    }
 }

@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.example.vblogserver.domain.user.dto.ResponseDto;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @ControllerAdvice
 class GlobalExceptionHandler {
 
@@ -25,5 +28,14 @@ class GlobalExceptionHandler {
 	@ExceptionHandler(UserNotFoundException.class)
 	public ResponseEntity<String> handleUserNotFoundException(UserNotFoundException e) {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+	}
+
+	@ExceptionHandler(NotFoundException.class)
+	public ResponseEntity<Map<String, Object>> handleNotFoundException(NotFoundException ex) {
+		Map<String, Object> body = new HashMap<>();
+		body.put("result", false);
+		body.put("reason", ex.getMessage());
+
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
 	}
 }
