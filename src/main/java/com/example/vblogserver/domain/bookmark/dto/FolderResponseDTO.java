@@ -1,6 +1,6 @@
 package com.example.vblogserver.domain.bookmark.dto;
 
-import com.example.vblogserver.domain.board.entity.Board;
+import com.example.vblogserver.domain.board.dto.BoardDTO;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,5 +13,13 @@ public class FolderResponseDTO {
     private String name;
     private String type;
     private Long userId;
-    private List<Board> boards;
+    private List<BoardResponseDTO> boards;
+
+    public List<BoardResponseDTO> getBoards() {
+        return boards;
+    }
+
+    public void setBoards(List<BoardResponseDTO> boards) {
+        this.boards = boards;
+    }
 }

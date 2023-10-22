@@ -1,15 +1,11 @@
 package com.example.vblogserver.domain.user.controller.myinfo;
 
-import com.example.vblogserver.domain.board.dto.BoardDTO;
+import com.example.vblogserver.domain.bookmark.dto.BoardResponseDTO;
 import com.example.vblogserver.domain.board.entity.Board;
 import com.example.vblogserver.domain.board.repository.BoardRepository;
-import com.example.vblogserver.domain.board.service.BoardService;
 import com.example.vblogserver.domain.bookmark.dto.FolderResponseDTO;
 import com.example.vblogserver.domain.bookmark.entity.Folder;
-import com.example.vblogserver.domain.bookmark.repository.BookmarkRepository;
 import com.example.vblogserver.domain.bookmark.repository.FolderRepository;
-import com.example.vblogserver.domain.click.entity.Click;
-import com.example.vblogserver.domain.click.repository.ClickRepository;
 import com.example.vblogserver.domain.user.dto.PageResponseDto;
 import com.example.vblogserver.domain.user.entity.User;
 import com.example.vblogserver.domain.user.repository.UserRepository;
@@ -65,14 +61,14 @@ public class BookmarksController {
 
         Folder createdFolder = folderRepository.save(folder);
 
-        FolderResponseDTO response = new FolderResponseDTO();
-        response.setId(createdFolder.getId());
-        response.setName(createdFolder.getName());
-        response.setType(createdFolder.getType());
-        response.setUserId(createdFolder.getUser().getId()); // set owner's id
-        response.setBoards(createdFolder.getBoards());
+        FolderResponseDTO response = convertToDto(createdFolder);
+        List<BoardResponseDTO> boardDtos =
+                createdFolder.getBoards().stream()
+                        .map(this::convertToDto)
+                        .collect(Collectors.toList());
+        response.setBoards(boardDtos);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/myinfo/folders/vlog")
@@ -101,13 +97,19 @@ public class BookmarksController {
         dto.setName(folder.getName());
         dto.setType(folder.getType());
         dto.setUserId(folder.getUser().getId());
-        // Boards are not included in this DTO.
+
+        List<Board> boardsInFolder = boardRepository.findByFolder(folder);
+        List<BoardResponseDTO> boardDtos =
+                boardsInFolder.stream()
+                        .map(this::convertToDto)
+                        .collect(Collectors.toList());
+
+        dto.setBoards(boardDtos);
         return dto;
     }
 
-
     @GetMapping("/myinfo/folders/{folderId}")
-    public ResponseEntity<PageResponseDto<BoardDTO>> getFolder(@PathVariable Long folderId,
+    public ResponseEntity<PageResponseDto<BoardResponseDTO>> getFolder(@PathVariable Long folderId,
                                                                @RequestParam(defaultValue = "0") int page) {
         Folder folder = folderRepository.findById(folderId).orElse(null);
 
@@ -125,12 +127,12 @@ public class BookmarksController {
             return ResponseEntity.ok(new PageResponseDto<>(new ArrayList<>(), page, 5, 0));
         }
 
-        List<BoardDTO> boardDTOs =
+        List<BoardResponseDTO> boardDTOs =
                 boards.getContent().stream()
                         .map(this::convertToDto)
                         .collect(Collectors.toList());
 
-        PageResponseDto<BoardDTO> response =
+        PageResponseDto<BoardResponseDTO> response =
                 new PageResponseDto<>(boardDTOs,
                         boards.getNumber(),
                         boards.getSize(),
@@ -139,8 +141,8 @@ public class BookmarksController {
         return ResponseEntity.ok(response);
     }
 
-    private BoardDTO convertToDto(Board board){
-        return new BoardDTO(board);
+    private BoardResponseDTO convertToDto(Board board){
+        return new BoardResponseDTO(board);
     }
 
 }

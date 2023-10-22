@@ -1,4 +1,4 @@
-package com.example.vblogserver.domain.board.dto;
+package com.example.vblogserver.domain.bookmark.dto;
 
 import com.example.vblogserver.domain.board.entity.Board;
 import lombok.AllArgsConstructor;
@@ -12,14 +12,22 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Getter
 @Setter
-public class BoardDTO {
+public class BoardResponseDTO {
+    private Long id;
+    private String writer;
     private String title;
     private String link;
     private String description;
+    private LocalDate createdDate;
+    private String hashtag;
 
-    public BoardDTO(Board board) {
+    public BoardResponseDTO(Board board) {
+        this.id = board.getId();
+        this.writer = board.getWriter();
         this.title = board.getTitle();
         this.link = board.getLink();
         this.description = board.getDescription();
+        this.createdDate = board.getCreatedDate();
+        this.hashtag = board.getHashtag();
     }
 }

@@ -34,4 +34,6 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     List<Board> findByHashtagContainingOrDescriptionContainingOrTitleContaining(String hashtag, String description, String title);
 
     Page<Board> findByFolderAndCategoryG_CategoryNameIgnoreCase(Folder folder, String type, PageRequest pageRequest);
+
+    List<Board> findByFolder(Folder folder);
 }
