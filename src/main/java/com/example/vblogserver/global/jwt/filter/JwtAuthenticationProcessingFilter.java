@@ -2,6 +2,8 @@ package com.example.vblogserver.global.jwt.filter;
 
 import java.io.IOException;
 
+import com.example.vblogserver.global.jwt.util.InvalidTokenException;
+import com.example.vblogserver.global.jwt.util.TokenExpiredException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
@@ -100,16 +102,20 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 	 * 인증 허가 처리된 객체를 SecurityContextHolder에 담기
 	 * 그 후 다음 인증 필터로 진행
 	 */
-	public void checkAccessTokenAndAuthentication(HttpServletRequest request, HttpServletResponse response,
-		FilterChain filterChain) throws ServletException, IOException {
-		log.info("checkAccessTokenAndAuthentication() 호출");
-		jwtService.extractAccessToken(request)
-			.filter(jwtService::isTokenValid)
-			.ifPresent(accessToken -> jwtService.extractId(accessToken)
-				.ifPresent(loginId -> userRepository.findByLoginId(loginId)
-					.ifPresent(this::saveAuthentication)));
+	public void checkAccessTokenAndAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+		try {
+			log.info("checkAccessTokenAndAuthentication() 호출");
+			jwtService.extractAccessToken(request)
+					.filter(jwtService::isTokenValid)
+					.ifPresent(accessToken -> jwtService.extractId(accessToken)
+							.ifPresent(loginId -> userRepository.findByLoginId(loginId)
+									.ifPresent(this::saveAuthentication)));
 
-		filterChain.doFilter(request, response);
+			filterChain.doFilter(request, response);
+		} catch (InvalidTokenException | TokenExpiredException e) {
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			return;
+		}
 	}
 
 	/**
