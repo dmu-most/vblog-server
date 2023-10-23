@@ -57,7 +57,12 @@ public class TmpBookMark {
                 folder = existingFolders.get(0);
             } else {
                 // 폴더가 존재하지 않으면 새로 만들고 저장합니다.
-                folder = folderRepository.save(folder);
+                folder = new Folder();
+                folder.setName(folderName);
+                folder.setType("vlog");
+                folder.setUser(user);
+
+                folderRepository.save(folder);
             }
             Bookmark saveBookmark = Bookmark.builder()
                     .board(board)
