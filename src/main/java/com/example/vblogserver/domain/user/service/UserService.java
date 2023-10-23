@@ -3,6 +3,7 @@ package com.example.vblogserver.domain.user.service;
 import com.example.vblogserver.domain.user.util.UserNotFoundException;
 import com.example.vblogserver.global.jwt.service.JwtService;
 import com.example.vblogserver.global.jwt.util.InvalidTokenException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,11 +17,10 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
-@RequiredArgsConstructor
 public class UserService {
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
+    @Autowired private UserRepository userRepository;
+    @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired private JwtService jwtService;
 
     /*
 	자체 로그인 회원 가입 시 사용하는 회원 가입 API 로직

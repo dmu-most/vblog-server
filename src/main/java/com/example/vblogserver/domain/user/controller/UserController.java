@@ -9,6 +9,7 @@ import com.example.vblogserver.global.jwt.util.TokenExpiredException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,13 +28,12 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequiredArgsConstructor
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class UserController {
 
-    private final UserService userService;
-    private final JwtService jwtService;
-    private final UserRepository userRepository;
+    @Autowired private UserService userService;
+    @Autowired private JwtService jwtService;
+    @Autowired private UserRepository userRepository;
 
     @PostMapping("/signup")
     public ResponseEntity<String> signUp(@Valid @RequestBody UserSignUpDto userSignUpDto, BindingResult bindingResult) throws Exception {
