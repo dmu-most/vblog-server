@@ -15,4 +15,5 @@ public interface ClickRepository  extends JpaRepository<Click, Long> {
 	Page<Click> findByUser(User user, Pageable pageable);
 	Boolean existsByBoardAndUser(Board board, User user);
 	Click findByBoardAndUser(Board board, User user);
+	List<Click> findTop12ByUserOrderByClickedDateDesc(User user);
 }

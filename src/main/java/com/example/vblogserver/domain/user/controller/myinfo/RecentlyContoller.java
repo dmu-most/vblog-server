@@ -5,9 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.example.vblogserver.domain.user.dto.PageResponseDto;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import com.example.vblogserver.domain.board.dto.BoardRecentlyResponseDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,10 +20,8 @@ import com.example.vblogserver.domain.user.repository.UserRepository;
 import com.example.vblogserver.global.jwt.service.JwtService;
 
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/myinfo/recently")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class RecentlyContoller {
@@ -34,24 +30,24 @@ public class RecentlyContoller {
 	private final ClickRepository clickRepository;
 	private final BoardRepository boardRepository;
 
+	public RecentlyContoller(JwtService jwtService, UserRepository userRepository, ClickRepository clickRepository, BoardRepository boardRepository) {
+		this.jwtService = jwtService;
+		this.userRepository = userRepository;
+		this.clickRepository = clickRepository;
+		this.boardRepository = boardRepository;
+	}
+
 	@GetMapping("/blog")
-	public ResponseEntity<PageResponseDto<BoardDTO>> getRecentlyViewedBlogBoards(
-			HttpServletRequest request,
-			@RequestParam(defaultValue = "0") int page) {
-		return getRecentlyViewedBoardsByCategory(request,"blog", page);
+	public ResponseEntity<List<BoardRecentlyResponseDTO>> getRecentlyViewedBlogBoards(HttpServletRequest request) {
+		return getRecentlyViewedBoardsByCategory(request,"blog");
 	}
 
 	@GetMapping("/vlog")
-	public ResponseEntity<PageResponseDto<BoardDTO>> getRecentlyViewedVlogBoards(
-			HttpServletRequest request,
-			@RequestParam(defaultValue = "0") int page) {
-		return getRecentlyViewedBoardsByCategory(request,"vlog", page);
+	public ResponseEntity<List<BoardRecentlyResponseDTO>> getRecentlyViewedVlogBoards(HttpServletRequest request) {
+		return getRecentlyViewedBoardsByCategory(request,"vlog");
 	}
 
-	private ResponseEntity<PageResponseDto<BoardDTO>> getRecentlyViewedBoardsByCategory(
-			HttpServletRequest request,
-			String category,
-			int page) {
+	private ResponseEntity<List<BoardRecentlyResponseDTO>> getRecentlyViewedBoardsByCategory(HttpServletRequest request, String category) {
 
 		Optional<String> accessTokenOpt = jwtService.extractAccessToken(request);
 
@@ -68,33 +64,29 @@ public class RecentlyContoller {
 
 		User user = userRepository.findByLoginId(loginIdOpt.get()).orElseThrow(() -> new RuntimeException("User not found"));
 
-		PageRequest pageRequest = PageRequest.of(page, 5); // 페이지당 사이즈 : 5개
-		Page<Click> clicks = clickRepository.findByUser(user, pageRequest);
+		// 날짜순 상위 12개의 클릭 기록만 가져온다.
+		List<Click> clicks = clickRepository.findTop12ByUserOrderByClickedDateDesc(user);
 
-		List<Long> boardIds = clicks.getContent().stream()
+		List<Long> boardIds = clicks.stream()
+				.filter(click -> click.getBoard() != null) // Board 가 null 이 아닌 경우만 처리
 				.map(click -> click.getBoard().getId())
 				.collect(Collectors.toList());
 
 		List<Board> boards = boardRepository.findByIdInAndCategoryG_CategoryNameIgnoreCase(boardIds, category);
 
 		if (boards.isEmpty()) {
-			return ResponseEntity.ok(new PageResponseDto<>(new ArrayList<>(), page, 5, 0));
+			return ResponseEntity.ok(new ArrayList<>());
 		}
 
-		List<BoardDTO> boardDTOs = boards.stream()
-				.map(this::convertToDto)
+		List<BoardRecentlyResponseDTO> responseDTOS = boards.stream()
+				.map(BoardRecentlyResponseDTO::new)
 				.collect(Collectors.toList());
 
-		PageResponseDto<BoardDTO> response = new PageResponseDto<>();
-		response.setContent(boardDTOs);
-		response.setPageNumber(clicks.getNumber());
-		response.setPageSize(clicks.getSize());
-		response.setTotalElements(clicks.getTotalElements());
-
-		return ResponseEntity.ok(response);
+		return ResponseEntity.ok(responseDTOS);
 	}
 
-		private BoardDTO convertToDto(Board board){
+	private BoardDTO convertToDto(Board board){
 		return new BoardDTO(board);
 	}
 }
+
