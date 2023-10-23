@@ -1,9 +1,11 @@
 package com.example.vblogserver.domain.user.controller;
 
+import java.security.SignatureException;
 import java.util.Map;
 
 import com.example.vblogserver.domain.user.entity.User;
 import com.example.vblogserver.global.jwt.util.InvalidTokenException;
+import com.example.vblogserver.global.jwt.util.TokenExpiredException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletResponse;
@@ -80,19 +82,19 @@ public class UserController {
         String accessToken = jwtService.extractAccessToken(request)
                 .orElseThrow(() -> new InvalidTokenException("액세스 토큰이 없습니다."));
 
-        User user;
         try {
-            user = userService.getUserByAccessToken(accessToken);
+            User user = userService.getUserByAccessToken(accessToken);
             return ResponseEntity.ok(new UserInfoDto(user));
-        } catch (ExpiredJwtException e) { // If the access token is expired
+        } catch (TokenExpiredException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                     new ResponseDto(false, "만료된 액세스 토큰입니다.")
             );
-        } catch (JwtException e) {
-            throw new InvalidTokenException("유효하지 않은 액세스 토큰입니다.", e);
+        } catch (InvalidTokenException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    new ResponseDto(false, "유효하지 않은 액세스 토큰입니다.")
+            );
         }
     }
-
 
     @GetMapping("/myinfo/users/name")
     public ResponseEntity<UserInfoDto> getUserName(HttpServletRequest request) throws Exception {

@@ -3,6 +3,7 @@ package com.example.vblogserver.global.jwt.service;
 import java.util.Date;
 import java.util.Optional;
 
+import com.example.vblogserver.global.jwt.util.TokenExpiredException;
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -145,6 +146,7 @@ public class JwtService {
 			log.error("액세스 토큰의 서명 검증에 실패했습니다.", e);
 		} catch (JwtException e) {
 			log.error("액세스 토큰이 유효하지 않습니다.", e);
+			throw new InvalidTokenException("유효하지 않은 액세스 토큰입니다.", e);
 		}
 
 		return Optional.empty();
@@ -173,7 +175,9 @@ public class JwtService {
 					.setSigningKey(secretKey.getBytes())
 					.build()
 					.parseClaimsJws(token);
-		} catch (Exception e) {
+		} catch (ExpiredJwtException e) {
+			throw new TokenExpiredException("만료된 토큰입니다.", e);
+		} catch (JwtException e) {
 			throw new InvalidTokenException("유효하지 않은 토큰입니다.", e);
 		}
 
