@@ -13,7 +13,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.example.vblogserver.domain.bookmark.entity.Bookmark;
 import com.example.vblogserver.domain.review.entity.Review;
@@ -77,6 +79,8 @@ public class User {
     private List<Bookmark> bookmarks;
 
     // 선택지
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<UserOption> userOptions;
+    @ElementCollection(targetClass = OptionType.class)
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(name = "user_option")
+    private Set<OptionType> options = new HashSet<>();
 }
