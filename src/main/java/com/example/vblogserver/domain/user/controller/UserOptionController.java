@@ -12,10 +12,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
-@RequestMapping("/options")
 public class UserOptionController {
     private final OptionService optionService;
     private final UserOptionService userOptionService;
@@ -29,20 +29,32 @@ public class UserOptionController {
         this.userRepository = userRepository;
     }
 
-    @GetMapping("")
-    public ResponseEntity<List<Option>> getAllOptions() {
-        List<Option> options = optionService.getAllOptions();
+    @GetMapping("/options")
+    public ResponseEntity<List<OptionType>> getAllOptions() {
+        List<OptionType> options = Arrays.asList(OptionType.values());
         return new ResponseEntity<>(options, HttpStatus.OK);
     }
 
-    @PostMapping("")
-    public ResponseEntity<List<UserOption>> updateUserOptions(HttpServletRequest request,
+    @PostMapping("/options")
+    public ResponseEntity<List<UserOption>> createUserOptions(HttpServletRequest request,
                                                               @RequestBody List<OptionType> options){
-        String token = request.getHeader("Authorization").substring(7);  // "Bearer " 제거
+        String token = request.getHeader("Authorization").substring(7);
         String loginId = jwtService.extractId(token)
                 .orElseThrow(() -> new RuntimeException("Invalid access token"));
 
-        List<UserOption> updatedUserOptions = userOptionService.saveUserOptions(loginId, options);
+        List<UserOption> newUserOptions = userOptionService.createUserOptions(loginId, options);
+
+        return ResponseEntity.ok(newUserOptions);
+    }
+
+    @PatchMapping("/myinfo/options")
+    public ResponseEntity<List<UserOption>> updateUserOptions(HttpServletRequest request,
+                                                              @RequestBody List<OptionType> options){
+        String token = request.getHeader("Authorization").substring(7);
+        String loginId = jwtService.extractId(token)
+                .orElseThrow(() -> new RuntimeException("Invalid access token"));
+
+        List<UserOption> updatedUserOptions = userOptionService.updateUserOptions(loginId, options);
 
         return ResponseEntity.ok(updatedUserOptions);
     }

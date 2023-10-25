@@ -77,6 +77,6 @@ public class User {
     private List<Bookmark> bookmarks;
 
     // 선택지
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<UserOption> userOptions;
 }

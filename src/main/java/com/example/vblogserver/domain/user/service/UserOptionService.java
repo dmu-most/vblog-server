@@ -28,36 +28,17 @@ public class UserOptionService {
         this.userRepository = userRepository;
     }
 
-    public void addUserOption(User user, Option option) {
-        List<UserOption> currentOptions = user.getUserOptions();
-
-
-        if (currentOptions.size() >= 3) {
-            throw new RuntimeException("A user can select up to 3 options.");
-        }
-
-        UserOption newUserOption = new UserOption();
-        newUserOption.setUser(user);
-        newUserOption.setOption(option);
-
-        // save the new selection in the database
-        userOptionRepository.save(newUserOption);
-    }
-
-    public List<UserOption> saveUserOptions(String loginId, List<OptionType> options) {
+    public List<UserOption> createUserOptions(String loginId, List<OptionType> options) {
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new RuntimeException("Invalid login id: " + loginId));
 
-        // Check if the user has already selected options and remove them if so
-        Long userId = user.getId(); // assuming User object has getId() method
-        List<UserOption> existingOptions = userOptionRepository.findByUserId(userId);
-        if (!existingOptions.isEmpty()) {
-            userOptionRepository.deleteAll(existingOptions);
+        if (options.isEmpty() || options.size() > 3) {
+            throw new RuntimeException("1~3개의 카테고리를 선택해주세요.");
         }
 
         // Save the new options
         List<UserOption> newOptions = new ArrayList<>();
-        for (var type : options) { // changed from optionType to options
+        for (var type : options) {
             Option option = optionRepository.findByType(type).orElseThrow(()
                     -> new RuntimeException("Invalid Option Type"));
             UserOption newUserOption = new UserOption();
@@ -65,12 +46,27 @@ public class UserOptionService {
             newUserOption.setOption(option);
 
             newOptions.add(newUserOption);
-
-            // save the new selection in the database
             userOptionRepository.save(newUserOption);
         }
 
         return newOptions;
+    }
+
+    public List<UserOption> updateUserOptions(String loginId, List<OptionType> options) {
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new RuntimeException("Invalid login id: " + loginId));
+
+        if (options.isEmpty() || options.size() > 3) {
+            throw new RuntimeException("1~3개의 카테고리를 선택해주세요.");
+        }
+
+        Long userId = user.getId();
+        List<UserOption> existingOptions = userOptionRepository.findByUserId(userId);
+        if (!existingOptions.isEmpty()) {
+            userOptionRepository.deleteAll(existingOptions);
+        }
+
+        return createUserOptions(loginId, options);
     }
 }
 
