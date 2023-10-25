@@ -21,6 +21,9 @@ public class ReviewDTO {
     // 게시글 ID
     private Long boardId;
 
+    // 게시글 제목
+    private String title;
+
     public void setGrade(float grade) {
         this.grade = grade;
     }
@@ -60,4 +63,11 @@ public class ReviewDTO {
     public void setBoardId(Long boardId) {this.boardId = boardId; }
     public Long getBoardId() { return boardId; }
 
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
 }

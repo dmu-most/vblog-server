@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.example.vblogserver.domain.board.entity.Board;
 import com.example.vblogserver.domain.user.dto.PageResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -79,23 +80,30 @@ public class ReviewsController {
 			reviewDTOs = new ArrayList<>();
 		} else {
 			reviewDTOs = reviews.getContent().stream()
-				.map(review -> {
-					ReviewDTO reviewDTO = new ReviewDTO();
-					reviewDTO.setReviewId(review.getId());
-					reviewDTO.setContent(review.getContent());
-					reviewDTO.setCreatedDate(review.getCreatedDate());
-					reviewDTO.setBoardId(review.getBoard().getId());  // 게시글 ID 설정
+					.map(review -> {
+						ReviewDTO reviewDTO = new ReviewDTO();
+						reviewDTO.setReviewId(review.getId());
+						reviewDTO.setContent(review.getContent());
+						reviewDTO.setCreatedDate(review.getCreatedDate());
 
-					// Category 정보 설정
-					if (review.getBoard().getCategoryG() != null) {
-						reviewDTO.setCategory(review.getBoard().getCategoryG().getCategoryName());
-					}
+						Board board = review.getBoard();
 
-					reviewDTO.setGrade(review.getGrade());
+						if(board != null) {
+							reviewDTO.setBoardId(board.getId());  // 게시글 ID 설정
 
-					return reviewDTO;
-				})
-				.collect(Collectors.toList());
+							if (board.getCategoryG() != null) {
+								reviewDTO.setCategory(board.getCategoryG().getCategoryName());
+							}
+
+							if (board.getTitle() != null) {  // 게시글 제목 설정 (추가)
+								reviewDTO.setTitle(board.getTitle());
+							}
+						}
+
+						return reviewDTO;
+					})
+					.collect(Collectors.toList());
+
 		}
 
 		PageResponseDto<ReviewDTO> responseDto =
