@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class UserOptionService {
@@ -28,12 +29,21 @@ public class UserOptionService {
         this.userRepository = userRepository;
     }
 
-    public List<UserOption> createUserOptions(String loginId, List<OptionType> options) {
+    public List<UserOption> saveUserOptions(String loginId, List<OptionType> options) {
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new RuntimeException("Invalid login id: " + loginId));
 
         if (options.isEmpty() || options.size() > 3) {
             throw new RuntimeException("1~3개의 카테고리를 선택해주세요.");
+        }
+
+        // 사용자가 선택한 옵션들 검증
+        for (OptionType option : options) {
+            try {
+                OptionType.valueOf(String.valueOf(option));
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("Invalid Option Type: " + option);
+            }
         }
 
         // Save the new options
@@ -66,7 +76,7 @@ public class UserOptionService {
             userOptionRepository.deleteAll(existingOptions);
         }
 
-        return createUserOptions(loginId, options);
+        return saveUserOptions(loginId, options);
     }
 }
 

@@ -1,6 +1,5 @@
 package com.example.vblogserver.domain.user.controller;
 
-import com.example.vblogserver.domain.user.entity.Option;
 import com.example.vblogserver.domain.user.entity.OptionType;
 import com.example.vblogserver.domain.user.entity.UserOption;
 import com.example.vblogserver.domain.user.repository.UserRepository;
@@ -12,8 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 public class UserOptionController {
@@ -36,26 +35,52 @@ public class UserOptionController {
     }
 
     @PostMapping("/options")
-    public ResponseEntity<List<UserOption>> createUserOptions(HttpServletRequest request,
-                                                              @RequestBody List<OptionType> options){
+    public ResponseEntity<Map<String, Object>> saveUserOptions(HttpServletRequest request, @RequestBody List<OptionType> options) {
         String token = request.getHeader("Authorization").substring(7);
         String loginId = jwtService.extractId(token)
                 .orElseThrow(() -> new RuntimeException("Invalid access token"));
 
-        List<UserOption> newUserOptions = userOptionService.createUserOptions(loginId, options);
+        List<UserOption> savedOptions = userOptionService.saveUserOptions(loginId, options);
 
-        return ResponseEntity.ok(newUserOptions);
+        Map<String, Object> response = new HashMap<>();
+
+        if (!savedOptions.isEmpty()) {
+            List<String> selectedOptions = savedOptions.stream()
+                    .map(userOption -> userOption.getOption().getType().name())
+                    .collect(Collectors.toList());
+            response.put("isSelected", true);
+            response.put("type", selectedOptions);
+        } else {
+            response.put("isSelected", false);
+            response.put("type", new ArrayList<>());
+        }
+
+        return ResponseEntity.ok(response);
     }
 
     @PatchMapping("/myinfo/options")
-    public ResponseEntity<List<UserOption>> updateUserOptions(HttpServletRequest request,
-                                                              @RequestBody List<OptionType> options){
+    public ResponseEntity<Map<String, Object>> updateUserOptions(HttpServletRequest request,
+                                                                 @RequestBody List<OptionType> options) {
         String token = request.getHeader("Authorization").substring(7);
         String loginId = jwtService.extractId(token)
                 .orElseThrow(() -> new RuntimeException("Invalid access token"));
 
-        List<UserOption> updatedUserOptions = userOptionService.updateUserOptions(loginId, options);
+        List<UserOption> updatedOptions = userOptionService.updateUserOptions(loginId, options);
 
-        return ResponseEntity.ok(updatedUserOptions);
+        Map<String, Object> response = new HashMap<>();
+
+        if (!updatedOptions.isEmpty()) {
+            List<String> selectedOptions = updatedOptions.stream()
+                    .map(userOption -> userOption.getOption().getType().name())
+                    .collect(Collectors.toList());
+            response.put("isSelected", true);
+            response.put("type", selectedOptions);
+        } else {
+            response.put("isSelected", false);
+            response.put("type", new ArrayList<>());
+        }
+
+        return ResponseEntity.ok(response);
     }
+
 }
