@@ -75,4 +75,8 @@ public class User {
     // 스크랩
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Bookmark> bookmarks;
+
+    // 선택지
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<UserOption> userOptions;
 }
