@@ -37,7 +37,7 @@ public class UserOptionService {
 
         Map<String, Object> response = new HashMap<>();
         response.put("isSelected", !options.isEmpty());
-        response.put("categorys", options);
+        response.put("category", options);
 
         return response;
     }
@@ -63,7 +63,7 @@ public class UserOptionService {
 
         Map<String, Object> response = new HashMap<>();
         response.put("isSelected", !options.isEmpty());
-        response.put("categorys", options);
+        response.put("category", options);
 
         return response;
     }

@@ -52,7 +52,7 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 					responseBody.put("username", user.getUsername());
 
 					responseBody.put("isSelected", !user.getOptions().isEmpty());
-					responseBody.put("categorys", user.getOptions());
+					responseBody.put("category", user.getOptions());
 
 					Gson gson = new GsonBuilder().serializeNulls().create();
 					String jsonResponseBody = gson.toJson(responseBody);
