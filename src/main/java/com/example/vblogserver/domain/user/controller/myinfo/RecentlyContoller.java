@@ -1,6 +1,7 @@
 package com.example.vblogserver.domain.user.controller.myinfo;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -81,6 +82,8 @@ public class RecentlyContoller {
 		List<BoardRecentlyResponseDTO> responseDTOS = boards.stream()
 				.map(BoardRecentlyResponseDTO::new)
 				.collect(Collectors.toList());
+
+		Collections.reverse(responseDTOS); // 최신순으로 반환 하기 위해 리스트를 역순으로 정렬
 
 		return ResponseEntity.ok(responseDTOS);
 	}
