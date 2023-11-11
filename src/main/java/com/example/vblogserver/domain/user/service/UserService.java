@@ -1,5 +1,8 @@
 package com.example.vblogserver.domain.user.service;
 
+import com.example.vblogserver.domain.bookmark.entity.Folder;
+import com.example.vblogserver.domain.bookmark.repository.BookmarkRepository;
+import com.example.vblogserver.domain.bookmark.repository.FolderRepository;
 import com.example.vblogserver.domain.user.util.UserNotFoundException;
 import com.example.vblogserver.global.jwt.service.JwtService;
 import com.example.vblogserver.global.jwt.util.InvalidTokenException;
@@ -23,27 +26,43 @@ public class UserService {
     @Autowired private UserRepository userRepository;
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private JwtService jwtService;
+    @Autowired private FolderRepository folderRepository;
 
     /*
 	자체 로그인 회원 가입 시 사용하는 회원 가입 API 로직
 	자체 로그인이기 때문에 클라이언트 요청에서 localId, userName 등 추가 정보까지 다 받아와서
 	Builder로 추가 정보를 포함한 User Entity 생성 후 DB에 저장
 	 */
-    public void signUp(UserSignUpDto userSignUpDto) throws Exception {
+    public User signUp(UserSignUpDto userSignUpDto) throws Exception {
 
         if (userRepository.findByLoginId(userSignUpDto.getLoginId()).isPresent()) {
             throw new Exception("이미 존재하는 아이디입니다.");
         }
 
         User user = User.builder()
-            .password(userSignUpDto.getPassword())
-            .loginId(userSignUpDto.getLoginId())
-            .username(userSignUpDto.getUsername())
-            .role(Role.USER)
-            .build();
+                .password(userSignUpDto.getPassword())
+                .loginId(userSignUpDto.getLoginId())
+                .username(userSignUpDto.getUsername())
+                .role(Role.USER)
+                .build();
 
         user.passwordEncode(passwordEncoder);
-        userRepository.save(user);
+        User registeredUser = userRepository.save(user);
+
+        // 사용자 등록 후 기본 폴더 생성
+        Folder defaultVlogFolder = new Folder();
+        defaultVlogFolder.setName("모든 게시글");
+        defaultVlogFolder.setType("vlog");
+        defaultVlogFolder.setUser(registeredUser);
+        folderRepository.save(defaultVlogFolder);
+
+        Folder defaultBlogFolder = new Folder();
+        defaultBlogFolder.setName("모든 게시글");
+        defaultBlogFolder.setType("blog");
+        defaultBlogFolder.setUser(registeredUser);
+        folderRepository.save(defaultBlogFolder);
+
+        return registeredUser;
     }
 
     public boolean isLoginIdDuplicated(String loginId) {
@@ -100,4 +119,5 @@ public class UserService {
         user.setUsername(newUsername);
         userRepository.save(user);
     }
+
 }

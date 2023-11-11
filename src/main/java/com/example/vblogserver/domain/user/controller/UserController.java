@@ -1,13 +1,11 @@
 package com.example.vblogserver.domain.user.controller;
 
-import java.security.SignatureException;
 import java.util.Map;
 
 import com.example.vblogserver.domain.user.entity.User;
 import com.example.vblogserver.global.jwt.util.InvalidTokenException;
 import com.example.vblogserver.global.jwt.util.TokenExpiredException;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
+
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -19,13 +17,11 @@ import org.springframework.web.bind.annotation.*;
 import com.example.vblogserver.domain.user.dto.ResponseDto;
 import com.example.vblogserver.domain.user.dto.UserSignUpDto;
 import com.example.vblogserver.domain.user.dto.UserInfoDto;
-import com.example.vblogserver.domain.user.repository.UserRepository;
 import com.example.vblogserver.domain.user.service.UserService;
 import com.example.vblogserver.global.jwt.service.JwtService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -33,7 +29,6 @@ public class UserController {
 
     @Autowired private UserService userService;
     @Autowired private JwtService jwtService;
-    @Autowired private UserRepository userRepository;
 
     @PostMapping("/signup")
     public ResponseEntity<String> signUp(@Valid @RequestBody UserSignUpDto userSignUpDto, BindingResult bindingResult) throws Exception {
