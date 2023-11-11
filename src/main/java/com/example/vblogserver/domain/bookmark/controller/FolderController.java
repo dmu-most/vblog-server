@@ -92,12 +92,12 @@ public class FolderController {
     }
 
     // vlog, blog 별 스크랩 조회
-    @GetMapping("/myinfo/folders/vlog")
+    @GetMapping("/myinfo/scraps/vlog")
     public ResponseEntity<List<FolderResponseDTO>> getVlogFolders() {
         return getFoldersByType("vlog");
     }
 
-    @GetMapping("/myinfo/folders/blog")
+    @GetMapping("/myinfo/scraps/blog")
     public ResponseEntity<List<FolderResponseDTO>> getBlogFolders() {
         return getFoldersByType("blog");
     }
