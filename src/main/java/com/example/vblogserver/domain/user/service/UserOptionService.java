@@ -68,5 +68,13 @@ public class UserOptionService {
         return response;
     }
 
+    public List<OptionType> getUserOptions(String loginId) {
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new RuntimeException("Invalid login id: " + loginId));
+
+        return new ArrayList<>(user.getOptions());
+    }
+
+
 }
 
