@@ -41,8 +41,8 @@ public class FolderController {
     2. /folders/vlog : 마이페이지에서 브이로그 폴더 생성
     3. /folders/blog : 마이페이지에서 블로그 폴더 생성
      */
-    @PostMapping("/folders")
-    public ResponseEntity<FolderResponseDTO> createFolder(HttpServletRequest request, @RequestBody Folder folder) {
+    @PostMapping("/folders/{boardId}")
+    public ResponseEntity<FolderResponseDTO> createFolder(HttpServletRequest request, @PathVariable Long boardId, @RequestBody Folder folder) {
         // 액세스 토큰 추출
         Optional<String> accessTokenOpt = jwtService.extractAccessToken(request);
 
@@ -63,6 +63,11 @@ public class FolderController {
 
         User owner = userRepository.findByLoginId(userId)
                 .orElseThrow(() -> new NotFoundException(userId + "을 찾을 수 없습니다"));
+
+        // 게시글 타입 조회
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new NotFoundException("게시글을 찾을 수 없습니다."));
+        folder.setType(board.getCategoryG().getCategoryName());
 
         // 동일한 type의 폴더 중에서 동일한 이름을 가진 폴더가 있는지 검사
         Optional<Folder> duplicateFolder = folderRepository.findByTypeAndNameAndUser(folder.getType(), folder.getName(), owner);
@@ -171,6 +176,50 @@ public class FolderController {
 
     private BoardResponseDTO convertToDto(Board board){
         return new BoardResponseDTO(board);
+    }
+
+    public ResponseEntity<FolderResponseDTO> createFolder(HttpServletRequest request, Folder folder) {
+        // 액세스 토큰 추출
+        Optional<String> accessTokenOpt = jwtService.extractAccessToken(request);
+
+        // 액세스 토큰이 존재하지 않거나 유효하지 않다면 에러 응답 반환
+        if (accessTokenOpt.isEmpty() || !jwtService.isTokenValid(accessTokenOpt.get())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+
+        // 액세스 토큰에서 로그인 아이디 추출
+        Optional<String> loginIdOpt = jwtService.extractId(accessTokenOpt.get());
+
+        // 로그인 아이디가 존재하지 않으면 에러 응답 반환
+        if (loginIdOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+
+        String userId = loginIdOpt.get();
+
+        User owner = userRepository.findByLoginId(userId)
+                .orElseThrow(() -> new NotFoundException(userId + "을 찾을 수 없습니다"));
+
+        // 동일한 type의 폴더 중에서 동일한 이름을 가진 폴더가 있는지 검사
+        Optional<Folder> duplicateFolder = folderRepository.findByTypeAndNameAndUser(folder.getType(), folder.getName(), owner);
+        if (duplicateFolder.isPresent()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(null); // 중복되는 이름의 폴더가 있으면 409 Conflict 응답 반환
+        }
+
+        folder.setUser(owner);
+
+        Folder createdFolder = folderRepository.save(folder);
+
+        FolderResponseDTO response = convertToDto(createdFolder);
+
+        // 해당 폴더에 연결된 게시물들을 반환
+        List<BoardResponseDTO> boardDtos =
+                createdFolder.getBoards().stream()
+                        .map(this::convertToDto)
+                        .collect(Collectors.toList());
+        response.setBoards(boardDtos);
+
+        return ResponseEntity.ok(response);
     }
 
 }
