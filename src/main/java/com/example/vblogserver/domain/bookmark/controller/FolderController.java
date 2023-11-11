@@ -42,7 +42,7 @@ public class FolderController {
     3. /folders/blog : 마이페이지에서 블로그 폴더 생성
      */
     @PostMapping("/folders")
-    public ResponseEntity<FolderResponseDTO> createFolder(HttpServletRequest request, @RequestBody Folder folder, @RequestBody List<Long> contentId) {
+    public ResponseEntity<FolderResponseDTO> createFolder(HttpServletRequest request, @RequestBody Folder folder) {
         // 액세스 토큰 추출
         Optional<String> accessTokenOpt = jwtService.extractAccessToken(request);
 
@@ -72,29 +72,31 @@ public class FolderController {
 
         folder.setUser(owner);
 
-        // contentId로 Bookmark를 조회하여 folder에 추가
-        List<Bookmark> bookmarks = bookmarkRepository.findByIdIn(contentId);
-        folder.setBookmarks(bookmarks);
-
         Folder createdFolder = folderRepository.save(folder);
 
         FolderResponseDTO response = convertToDto(createdFolder);
+
+        // 해당 폴더에 연결된 게시물들을 반환
+        List<BoardResponseDTO> boardDtos =
+                createdFolder.getBoards().stream()
+                        .map(this::convertToDto)
+                        .collect(Collectors.toList());
+        response.setBoards(boardDtos);
 
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/folders/vlog")
-    public ResponseEntity<FolderResponseDTO> createVlogFolder(HttpServletRequest request, @RequestBody Folder folder, @RequestBody List<Long> contentId) {
+    public ResponseEntity<FolderResponseDTO> createVlogFolder(HttpServletRequest request, @RequestBody Folder folder) {
         folder.setType("vlog");
-        return createFolder(request, folder, contentId);
+        return createFolder(request, folder);
     }
 
     @PostMapping("/folders/blog")
-    public ResponseEntity<FolderResponseDTO> createBlogFolder(HttpServletRequest request, @RequestBody Folder folder, @RequestBody List<Long> contentId) {
+    public ResponseEntity<FolderResponseDTO> createBlogFolder(HttpServletRequest request, @RequestBody Folder folder) {
         folder.setType("blog");
-        return createFolder(request, folder, contentId);
+        return createFolder(request, folder);
     }
-
 
     // vlog, blog 별 스크랩 조회
     @GetMapping("/myinfo/scraps/vlog")
