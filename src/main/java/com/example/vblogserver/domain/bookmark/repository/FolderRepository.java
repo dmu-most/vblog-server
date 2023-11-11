@@ -6,15 +6,17 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface FolderRepository extends JpaRepository<Folder, Long> {
-    List<Folder> findByUserIdAndType(Long userId, String type);
 
     List<Folder> findByNameAndUser(String folderName, User user);
 
     Folder findByNameAndUserAndType(String folderName, User user, String type);
 
-
     List<Folder> findByType(String type);
+
+    Optional<Folder> findByTypeAndNameAndUser(String type, String name, User user);
+
 }

@@ -11,4 +11,6 @@ import java.util.List;
 
 public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
     Bookmark findByBoardAndFolderAndUser(Board board, Folder folder, User user);
+
+    List<Bookmark> findByFolder(Folder folder);
 }

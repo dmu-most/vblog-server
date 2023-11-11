@@ -1,10 +1,12 @@
-package com.example.vblogserver.domain.user.controller.myinfo;
+package com.example.vblogserver.domain.bookmark.controller;
 
 import com.example.vblogserver.domain.bookmark.dto.BoardResponseDTO;
 import com.example.vblogserver.domain.board.entity.Board;
 import com.example.vblogserver.domain.board.repository.BoardRepository;
 import com.example.vblogserver.domain.bookmark.dto.FolderResponseDTO;
+import com.example.vblogserver.domain.bookmark.entity.Bookmark;
 import com.example.vblogserver.domain.bookmark.entity.Folder;
+import com.example.vblogserver.domain.bookmark.repository.BookmarkRepository;
 import com.example.vblogserver.domain.bookmark.repository.FolderRepository;
 import com.example.vblogserver.domain.user.dto.PageResponseDto;
 import com.example.vblogserver.domain.user.entity.User;
@@ -27,13 +29,18 @@ import java.util.stream.Collectors;
 @RestController
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*", allowedHeaders = "*")
-public class BookmarksController {
+public class FolderController {
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
     private final FolderRepository folderRepository;
+    private final BookmarkRepository bookmarkRepository;
 
-
+    /*
+    1. /folders : 게시글 디테일 페이지에서 폴더 생성
+    2. /folders/vlog : 마이페이지에서 브이로그 폴더 생성
+    3. /folders/blog : 마이페이지에서 블로그 폴더 생성
+     */
     @PostMapping("/folders")
     public ResponseEntity<FolderResponseDTO> createFolder(HttpServletRequest request, @RequestBody Folder folder) {
         // 액세스 토큰 추출
@@ -57,20 +64,34 @@ public class BookmarksController {
         User owner = userRepository.findByLoginId(userId)
                 .orElseThrow(() -> new NotFoundException(userId + "을 찾을 수 없습니다"));
 
+        // 동일한 type의 폴더 중에서 동일한 이름을 가진 폴더가 있는지 검사
+        Optional<Folder> duplicateFolder = folderRepository.findByTypeAndNameAndUser(folder.getType(), folder.getName(), owner);
+        if (duplicateFolder.isPresent()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(null); // 중복되는 이름의 폴더가 있으면 409 Conflict 응답 반환
+        }
+
         folder.setUser(owner);
 
         Folder createdFolder = folderRepository.save(folder);
 
         FolderResponseDTO response = convertToDto(createdFolder);
-        List<BoardResponseDTO> boardDtos =
-                createdFolder.getBoards().stream()
-                        .map(this::convertToDto)
-                        .collect(Collectors.toList());
-        response.setBoards(boardDtos);
 
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/folders/vlog")
+    public ResponseEntity<FolderResponseDTO> createVlogFolder(HttpServletRequest request, @RequestBody Folder folder) {
+        folder.setType("vlog");
+        return createFolder(request, folder);
+    }
+
+    @PostMapping("/folders/blog")
+    public ResponseEntity<FolderResponseDTO> createBlogFolder(HttpServletRequest request, @RequestBody Folder folder) {
+        folder.setType("blog");
+        return createFolder(request, folder);
+    }
+
+    // vlog, blog 별 스크랩 조회
     @GetMapping("/myinfo/folders/vlog")
     public ResponseEntity<List<FolderResponseDTO>> getVlogFolders() {
         return getFoldersByType("vlog");
@@ -98,10 +119,10 @@ public class BookmarksController {
         dto.setType(folder.getType());
         dto.setUserId(folder.getUser().getId());
 
-        List<Board> boardsInFolder = boardRepository.findByFolder(folder);
+        List<Bookmark> bookmarksInFolder = bookmarkRepository.findByFolder(folder);
         List<BoardResponseDTO> boardDtos =
-                boardsInFolder.stream()
-                        .map(this::convertToDto)
+                bookmarksInFolder.stream()
+                        .map(bookmark -> this.convertToDto(bookmark.getBoard()))
                         .collect(Collectors.toList());
 
         dto.setBoards(boardDtos);

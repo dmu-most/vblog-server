@@ -29,6 +29,6 @@ public class Folder {
     private User user;
 
     @OneToMany(mappedBy = "folder")
-    private List<Board> boards = new ArrayList<>();
+    private List<Bookmark> bookmarks = new ArrayList<>();
 }
 
