@@ -14,6 +14,7 @@ import java.time.LocalDate;
 @Setter
 public class BoardResponseDTO {
     private Long id;
+    private String thumbnails;
     private String writer;
     private String title;
     private String link;
@@ -23,6 +24,7 @@ public class BoardResponseDTO {
 
     public BoardResponseDTO(Board board) {
         this.id = board.getId();
+        this.thumbnails = board.getThumbnails();
         this.writer = board.getWriter();
         this.title = board.getTitle();
         this.link = board.getLink();
