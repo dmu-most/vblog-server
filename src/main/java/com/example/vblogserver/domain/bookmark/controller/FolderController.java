@@ -41,8 +41,8 @@ public class FolderController {
     2. /folders/vlog : 마이페이지에서 브이로그 폴더 생성
     3. /folders/blog : 마이페이지에서 블로그 폴더 생성
      */
-    @PostMapping("/folders/{boardId}")
-    public ResponseEntity<FolderResponseDTO> createFolder(HttpServletRequest request, @PathVariable Long boardId, @RequestBody Folder folder) {
+    @PostMapping("/folders/{contentId}")
+    public ResponseEntity<FolderResponseDTO> createFolder(HttpServletRequest request, @PathVariable Long contentId, @RequestBody Folder folder) {
         // 액세스 토큰 추출
         Optional<String> accessTokenOpt = jwtService.extractAccessToken(request);
 
@@ -65,7 +65,7 @@ public class FolderController {
                 .orElseThrow(() -> new NotFoundException(userId + "을 찾을 수 없습니다"));
 
         // 게시글 타입 조회
-        Board board = boardRepository.findById(boardId)
+        Board board = boardRepository.findById(contentId)
                 .orElseThrow(() -> new NotFoundException("게시글을 찾을 수 없습니다."));
         folder.setType(board.getCategoryG().getCategoryName());
 
