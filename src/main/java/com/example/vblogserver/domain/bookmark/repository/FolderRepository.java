@@ -15,8 +15,7 @@ public interface FolderRepository extends JpaRepository<Folder, Long> {
 
     Folder findByNameAndUserAndType(String folderName, User user, String type);
 
-    List<Folder> findByType(String type);
-
     Optional<Folder> findByTypeAndNameAndUser(String type, String name, User user);
 
+    List<Folder> findByTypeAndUser(String type, User user);
 }

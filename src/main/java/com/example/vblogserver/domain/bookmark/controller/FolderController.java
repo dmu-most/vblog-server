@@ -105,17 +105,38 @@ public class FolderController {
 
     // vlog, blog 별 스크랩 조회
     @GetMapping("/myinfo/scraps/vlog")
-    public ResponseEntity<List<FolderResponseDTO>> getVlogFolders() {
-        return getFoldersByType("vlog");
+    public ResponseEntity<List<FolderResponseDTO>> getVlogFolders(HttpServletRequest request) {
+        return getFoldersByType(request, "vlog");
     }
 
     @GetMapping("/myinfo/scraps/blog")
-    public ResponseEntity<List<FolderResponseDTO>> getBlogFolders() {
-        return getFoldersByType("blog");
+    public ResponseEntity<List<FolderResponseDTO>> getBlogFolders(HttpServletRequest request) {
+        return getFoldersByType(request, "blog");
     }
 
-    private ResponseEntity<List<FolderResponseDTO>> getFoldersByType(String type) {
-        List<Folder> folders = folderRepository.findByType(type);
+    private ResponseEntity<List<FolderResponseDTO>> getFoldersByType(HttpServletRequest request, String type) {
+        // 액세스 토큰 추출
+        Optional<String> accessTokenOpt = jwtService.extractAccessToken(request);
+
+        // 액세스 토큰이 존재하지 않거나 유효하지 않다면 에러 응답 반환
+        if (accessTokenOpt.isEmpty() || !jwtService.isTokenValid(accessTokenOpt.get())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+
+        // 액세스 토큰에서 로그인 아이디 추출
+        Optional<String> loginIdOpt = jwtService.extractId(accessTokenOpt.get());
+
+        // 로그인 아이디가 존재하지 않으면 에러 응답 반환
+        if (loginIdOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+
+        String userId = loginIdOpt.get();
+
+        User user = userRepository.findByLoginId(userId)
+                .orElseThrow(() -> new NotFoundException(userId + "을 찾을 수 없습니다"));
+
+        List<Folder> folders = folderRepository.findByTypeAndUser(type, user);
 
         List<FolderResponseDTO> folderDtos = folders.stream()
                 .map(this::convertToDto)
@@ -123,6 +144,7 @@ public class FolderController {
 
         return ResponseEntity.ok(folderDtos);
     }
+
 
     private FolderResponseDTO convertToDto(Folder folder){
         FolderResponseDTO dto = new FolderResponseDTO();
@@ -141,6 +163,7 @@ public class FolderController {
         return dto;
     }
 
+    // 폴더 조회
     @GetMapping("/myinfo/folders/{folderId}")
     public ResponseEntity<PageResponseDto<BoardResponseDTO>> getFolder(@PathVariable Long folderId,
                                                                @RequestParam(defaultValue = "0") int page) {
